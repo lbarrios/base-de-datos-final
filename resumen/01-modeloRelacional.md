@@ -108,6 +108,9 @@ Conjunto minimal de atributos que definen unívocamente a las tuplas.
 - Una clave primaria (PK = Primary Key)
 - Referencias a claves de otras relaciones claves externas/foráneas (FK = Foreign Keys)
 
+## Superclaves
+==TODO:==
+
 ## Restricciones / Constraints
 Una **Integrity Constraint** es básicamente una expresión booleana que tiene que evaluar a true.
 
