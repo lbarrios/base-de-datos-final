@@ -193,25 +193,25 @@ Herramienta formal para el análisis de esquemas. Permite detectar y describir p
         ```
         E_DNI, P_NUMERO, HORAS, E_NOMBRE, P_NOMBRE, P_UBICACION
         -----  --------
-          ∨       ∨       ∧
+          v       v       ^
           |       |       |
-          ∨-------∨-------∧
+          v-------v-------^
         ```
     + **DF2: E_DNI ⟹ E_NOMBRE**
         ```
         E_DNI, P_NUMERO, HORAS, E_NOMBRE, P_NOMBRE, P_UBICACION
         -----  --------
-          ∨       ∨                ∧
+          v       v                ^
           |       |                |
-          ∨-------∨----------------∧
+          v-------v----------------^
         ```
     + **DF3: P_NUMERO ⟹ {P_NOMBRE, P_UBICACION}**
         ```
         E_DNI, P_NUMERO, HORAS, E_NOMBRE, P_NOMBRE, P_UBICACION
         -----  --------
-                  ∨                           ∧          ∧
+                  v                           ^          ^
                   |                           |          |
-                  ∨---------------------------------------
+                  v---------------------------------------
         ```
 
 - Formalmente:
@@ -227,6 +227,13 @@ Herramienta formal para el análisis de esquemas. Permite detectar y describir p
     + Para _confirmar_ la existencia, es necesario conocer la semántica de los atributos.
     + Para _descartar_ la existencia, sólo basta con mostrar tuplas que violen esta posible DF.
 - Un conjunto de DF se denota F.
+- Una DF _X⟹Y_ es **completa** si al eliminar algún atributo _A de X_ la DF deja de existir. En caso contrario, es **parcial**.
+    + Horas depende de manera completa de PK
+    + E_Nombre depende de manera parcial de PK.
+    + P_Nombre y P_Ubicacion dependen de manera parcial de PK.
+- Una DF _X⟹Y_ es **transitiva** si existe un conjunto de atributos _Z_ en _R_ que no son ni CK ni un subconjunto de alguna clave de _R_, tal que _X⟹Z_ y _Z⟹Y_.
+- Una DF _A⟹B_ es **trivial** si _B⊆A_.
+    + Por ejemplo, _A⟹A_ es una DF trivial.
 
 ## FN basadas en PK
 - Se asume:
@@ -322,3 +329,150 @@ Administración | 8          | 27-384-2   | {Argentina}
 Cuando el valor de una tupla es una relación.
 
 - 1FN prohíbe relaciones anidadas.
+    + Mover atributos de relación anidada a una nueva relación
+    + Agregar a la nueva relación PK de la relación original
+    + PK de la nueva relación = clave parcial + PK relación original
+
+* Ejemplo: `EMP_PROY{<E_CUIL>, E_NOMBRE, PROYECTOS{<P_NUMERO>, HORAS}}` se transforma en `EMP{<E_CUIL>, E_NOMBRE}` y `EMP_PROY{<E_CUIL>, <P_NUMERO>, HORAS}`.
+
+## 2FN
+Un esquema R está en 2FN si todo atributo no primo _A_ de _R_ depende funcionalmente de manera completa de la PK de R.
+
+- Definición alternativa: Un esquema R está en 2FN si todo atributo no primo _A_ de _R_ depende completamente de todas las claves de _R_.
+
+**Tips**
+- Verificar sólo DF cuyos lado izquierdo posean atributos que sean parte de la PK.
+- Si la PK es un solo atributo, cumple 2FN.
+
+- Ejemplo descomposición en 2FN:
+    + **EP1**
+        ```
+        E_DNI, P_NUMERO, HORAS
+        -----  --------
+          v       v       ^
+          |       |       |
+          v-------v-------^
+        ```
+    + **EP2**
+        ```
+        E_DNI, E_NOMBRE
+        ----- 
+          v       ^
+          |       |
+          v-------^
+        ```
+    + **EP3**
+        ```
+        P_NUMERO, P_NOMBRE, P_UBICACION
+        --------                       
+        v          ^          ^
+        |          |          |
+        v----------------------
+        ```
+
+## 3FN
+Un esquema está en 3FN si está en 2FN, y además ningún atributo no primo de R depende transitivamente de la PK.
+
+- Definición formal: Un esquema _R_ está en 3FN si para toda dependencia funcional **no trivial** _X⟹A_ de _R_, se cumple alguna de las condiciones:
+    + _X_ es SK de _R_.
+    + _A_ es atributo primo de _R_.
+
+- Ejemplo descomposición 3FN
+    + **EMPLEADO_DEPARTAMENTO** (es 2FN, pero no es 3FN)
+        ```
+        E_NOMBRE | <E_CUIL> | E_FECHA_NACIMIENTO | NRO_DPTO | D_NOMBRE
+            ^          v              ^              ^ v         ^
+            |          |              |              | |         |
+            ^----------v--------------^--------------^ |         |
+                                                       |         |
+                                                       v---------^
+        ```
+
+    + **EMPLEADO**
+        ```
+        E_NOMBRE | <E_CUIL> | E_FECHA_NACIMIENTO | NRO_DPTO
+            ^          v              ^               ^
+            |          |              |               |
+            ^----------v--------------^---------------^
+        ```
+
+    + **DEPARTAMENTO**
+        ```
+        <NRO_DPTO> | D_NOMBRE
+           v            ^
+           |            |
+           v------------^
+        ```
+
+- El natural join _ED1⋈ED2_ de la descomposición recompone la relación original sin generar tuplas espúreas.
+
+## BCFN (Boyce-Codd Normal Form)
+Un esquema _R_ está en BCFN si pra toda dependencia funcional no trivial _X⟹A_ de _R_, _X_ es _SK_ de _R_.
+
+- Es un derivado más restrictivo de 3FN, ya que no permite la condición de que _A_ sea primo.
+
+- Reduce la redundancia.
+- Se puede perder alguna DF.
+
+## Reglas de inferencia
+El diseñador de la BD especifica DF semánticamente obvias. Existen DF no especificadas que pueden ser inferidas.
+
+- _R = {E_CUIL, NRO_DEPTO, D_NOMBRE}_
+- _F = {E_CUIL ⟹ NRO_DEPTO, NRO_DEPTO ⟹ D_NOMBRE}_
+- Usando ambas DF de _F_ se puede deducir que _E_CUIL ⟹ D_NOMBRE_.
+
+- Una DF _x⟹Y_ es **inferida de** o **implicada por** un conjunto de DFs _F_ de _R_ si se cumple _X⟹Y_ en toda instancia legal _r(R)_.
+    + Es decir, siempre que _r(R)_ satisface F, se cumple _X⟹Y_.
+- El conjunto de todas las DF de _F_ más todas las DF que puedan ser inferidas de _F_ se denota como _F⁺_.
+    + _R = {E_CUIL, NRO_DEPTO, D_NOMBRE}_
+    + _F = {E_CUIL ⟹ NRO_DEPTO, NRO_DEPTO ⟹ D_NOMBRE}_
+    + _F⁺ = {E_CUIL ⟹ NRO_DEPTO, NRO_DEPTO ⟹ D_NOMBRE, **E_CUIL ⟹ D_NOMBRE**}_
+
+### Axiomas de Armstrong
+- RI1 (reflexiva): si `Y⊆X`, entonces `X⟹Y`.
+- RI2 (de incremento): `{X⟹Y} ⊧ XZ⟹YZ`.
+- RI3 (transitiva): `{X⟹Y, Y⟹Z} ⊧ X⟹Z`.
+- Propiedades:
+    + Fiable (Sound): dado _F_ de _R_, cualquier DF deducida de _F_ utilizando RI1, RI2 o RI3 se cumple en cualquier estado _r(R)_ que satisface _F_.
+    + Completa (Complete): _F⁺_ puede ser determinado a partir de _F_ aplicando solamente RI1, RI2 y RI3.
+
+### Corolarios de Armstrong (reglas adicionales)
+- RI4 (de descomposición o proyección): `{X⟹YZ} ⊧ X⟹Y`.
+- RI5 (de unión o aditiva): `{X⟹Y, X⟹Z} ⊧ X⟹YZ`.
+- RI6 (pseudotransitiva): `{X⟹Y, WY⟹Z} ⊧ WX⟹Z`.
+
+### Clausura
+- Diseño:
+    1. Se especifica _F_ el conjunto de DFs por semántica de atributos.
+    2. Se utilizan RI1, RI2 y RI3 para inferir DFs adicionales.
+        1. Determinar conjunto de atributos _X_ que aparecen del lado izquierdo de cada DF de _F_.
+        2. Determinar conjunto _Y_ de atributos que dependen de _X_.
+
+- Clausura de _X_: conjunto de atributos que son determinados por _X_ basados en _F_. Se denota _X⁺_.
+
+**Algoritmo para determinar X⁺**
+```
+X⁺ := X
+repetir
+    viejoX⁺ := X⁺
+    para cada DF Y⟹Z en F hacer
+        si Y⊆X⁺ entonces
+            X⁺ = X⁺∪Z
+mientras(X⁺==viejoX⁺)
+```
+
+### Clave de una relación
+Búsqueda de una clave _K_ en _R_ a partir de un conjunto de DFs.
+
+```
+K := R
+para cada atributo A∈K
+    calcular (K−A)⁺
+    si (K−A)⁺ contiene todos los atributos de R entonces
+        K := K − {A}
+```
+
+- Determina una sola de las CK, depende fuertemente de la manera en que son removidos los atributos.
+
+## Bibliografía
+- Capítulo 15 (hasta 15.5 inclusive) Elmasri/Navathe - Fundamentals of Database Systems, 6th Ed., Pearson, 2011.
