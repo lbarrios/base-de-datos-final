@@ -229,3 +229,96 @@ Herramienta formal para el análisis de esquemas. Permite detectar y describir p
 - Un conjunto de DF se denota F.
 
 ## FN basadas en PK
+- Se asume:
+    + Se cuenta con el conjunto DF para cada relación
+    + Cada relación tiene PK
+- A cada esquema se le ejecutan test para **certificar** que satisfacen una **forma normal**.
+- Objetivo:
+    + Minimizar redundancia
+    + Minimizar anomalías de actualización.
+- Esquemas que no pasan ciertos tests, se descomponen en esquemas más pequeños.
+- La forma normal de una relación se refiere a **la mayor forma normal alcanzada** por ella.
+- **No garantizan un buen diseño** de la DB si se las considera aisladas de otros factores.
+- Propiedades luego de la descomposición:
+    + **Nonadditive Join (Lossless Join)**: no ocurre generación de tuplas espúreas; la relación original tiene que poder ser recuperada.
+        * Debe lograrse a cualquier costo.
+    + **Preservación de DF**: garantía de que cada DF se encuentra representada en algún esquema resultante de la descomposición.
+        * No siempre puede ser lograda; a veces se sacrifica.
+
+## Elementos
+* Super Clave (SK): SK de `R = {A₁, ⋯, aₙ}` es un subconjunto `S⊆R` de atributos tal que `t₁,t₂ ∈ r(R) ∧ t₁ = t₂ ⟹ t₁(S) ≠ t₂(S)`.
+* Clave (K): una clave K es una SK con la propiedad adicional de que al remover cualquier atributo de K, deja de ser SK. Es decir, un _SK minimal_.
+* Clave Candidata (CK): cada clave de un esquema se denomina clave candidata.
+* Clave Primaria (PK): es una CK designada _arbitrariamente_ como PK.
+* Clave Secundaria: cualquier CK que no es PK.
+* Atributo primo: atributo de un esquema R que pertenece a _**alguna** CK_ de R.
+* Requisito: todos los esquemas deben poseer PK en la práctica
+
+## 1FN
+- **Prohibe**: relaciones dentro de relaciones o relaciones como valores de atributos dentro de tuplas.
+- **Admite**: El dominio de un atributo debe incluir valores atómicos (simples e indivisibles). En la tupla, puede tomar un solo valor del dominio.
+
+### Técnicas para alcanzar 1FN
+
+**DEPARTAMENTO**
+
+D_NOMBRE       | <D_NUMERO> | D_MGR_CUIL | D_AREAS_INFLUENCIA
+-------------- | ---------- | ---------- | ---------------------------
+Investigación  | 2          | 27-233-9   | {Argentina, Brasil, Uruguay}
+Prensa         | 3          | 20-172-4   | {Chile}
+Administración | 8          | 27-384-2   | {Argentina}
+
+1. Remover atributo que viola 1FN y ubicarlo en una nueva relación. La nueva relación tiene como PK ambos atributos.
+    + Se mueve DPTO_AREAS_INFLUENCIA junto con la PK D_NUMERO.
+
+        **DEPARTAMENTO**
+
+        D_NOMBRE       | <D_NUMERO> | D_MGR_CUIL
+        -------------- | ---------- | ----------
+        Investigación  | 2          | 27-233-9  
+        Prensa         | 3          | 20-172-4  
+        Administración | 8          | 27-384-2  
+
+        **DEPARTAMENTO_AREAS**
+
+        <D_NUMERO> | <D_AREAS_INFLUENCIA>
+        ---------- | ---------------------
+        2          | Argentina
+        2          | Brasil
+        2          | Uruguay
+        3          | Chile
+        8          | Argentina
+    + Suele ser la mejor opción ya que no sufre de redundancia y es genérica (no se limita a un número de valores).
+2. Expandir la PK que permita que exista más de un mismo D_NUMERO, pero con distinta área de influencia.
+    + Esta solución introduce **REDUNDANCIA** en la relación.
+
+        **DEPARTAMENTO**
+
+        D_NOMBRE       | <D_NUMERO> | D_MGR_CUIL | <D_AREAS_INFLUENCIA>
+        -------------- | ---------- | ---------- | ---------------------
+        Investigación  | 2          | 27-233-9   | Argentina
+        Investigación  | 2          | 27-233-9   | Brasil
+        Investigación  | 2          | 27-233-9   | Uruguay
+        Prensa         | 3          | 20-172-4   | Chile
+        Administración | 8          | 27-384-2   | Argentina
+3. Si se conoce la cantidad máxima de valores que puede tomar el atributo, se pueden generar tantos atributos como esa cantidad.
+    + Ejemplo, si hay 3 áreas de influencia como máximo por departamento.
+
+        **DEPARTAMENTO**
+
+        D_NOMBRE       | <D_NUMERO> | D_MGR_CUIL | D_AREAS_INFLUENCIA1 | D_AREAS_INFLUENCIA2 | D_AREAS_INFLUENCIA3
+        -------------- | ---------- | ---------- | -- | -- | --
+        Investigación  | 2          | 27-233-9   | Argentina | Brasil | Uruguay
+        Prensa         | 3          | 20-172-4   | Chile | **NULL** | **NULL**
+        Administración | 8          | 27-384-2   | Argentina | **NULL** | **NULL**
+
+    + Introduce valores NULL para los casos en que la tupla no posee todos los valores.
+    + No existe una semántica en cuanto al orden y ubicación de los valores.
+    + Consultas se vuelven más complejas.
+- La técnica puede aplicarse recursivamente.
+- Debe manejarse con cuidado cuando hay múltiples atributos multivaluados para no generar relaciones inexistentes.
+
+### Relaciones anidadas
+Cuando el valor de una tupla es una relación.
+
+- 1FN prohíbe relaciones anidadas.
