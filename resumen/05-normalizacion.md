@@ -32,7 +32,7 @@ Objetivo: cuanto más fácil es explicar la semántica en los esquemas, mejor es
 Objetivo: minimizar el espacio de almacenamiento a través del diseño.
 
 - Mal diseño: `EMPLEADO_DEPARTAMENTO{E_NOMBRE, E_DNI, NRO_DPTO, D_NOMBRE}`
-    + **EMPLEADO**
+    + **EMPLEADO_DEPARTAMENTO**
 
     E_NOMBRE | E_DNI | NRO_DPTO | D_NOMBRE
     -------- | ----- | -------- | --------
@@ -110,3 +110,122 @@ Objetivo: minimizar el espacio de almacenamiento a través del diseño.
 - Por ejemplo, al guardar una factura, esto afecta el saldo del cliente. Este saldo se puede reconstruir recorriendo todas las facturas y pagos realizados, pero es "costoso" ya que es un dato frecuentemente consultado.
     + La solución sería guardar el saldo, y recalcular el saldo en cada pago.
     + Se debe utilizar algún mecanismo que permita automatizar esto último (triggers/store procedures, etc)
+
+## Pauta 3: NULLs
+Atributos no relacionados agrupados en una misma tabla pueden generar múltiples NULL en una misma tupla.
+
+**EMPLEADO_DEPARTAMENTO**
+
+E_NOMBRE | E_DNI | NRO_DPTO | D_NOMBRE
+-------- | ----- | -------- | --------
+Santiago | 44444 | 5          | Publicidad y Promoción
+Tamar    | 55555 | **_NULL_** | **_NULL_**
+
+- Desperdicio de **espacio de almacenamiento**
+- Problemas al hacer **JOIN** (`INNER JOIN` produce distinto resultado que `OUTER JOIN`).
+- ¿Cómo se interpretan las **funciones de agregación**? (count, sum, etc)
+- Diversas interpretaciones de NULL
+    + El resultado no aplica a la tupla.
+        * Ejemplo: registro de conducir en un menor.
+    + El valor existe, pero está ausente.
+        * Ejemplo: fecha de nacimiento.
+    + El valor es desconocido (no sabemos si existe o no)
+        * Ejemplo: teléfono.
+
+### Pautas
+- Evitar asignar atributos a una relación si estos pueden ser NULL frecuentemente
+- Si los NULL son inevitables, asegurar que sean situaciones excepcionales.
+
+## Pauta 3: Tuplas Espúreas
+Las tuplas espúreas representan información no válida.
+
+- Esquema original
+    **EMPLEADO_PROYECTO**
+
+    E_NOMBRE | E_DNI | NRO_PROY | P_UBICACION
+    -------- | ----- | -------- | --------
+    Diego    | 11111 | 5        | Argentina
+    Laura    | 22222 | 5        | Argentina
+    Marina   | 33333 | 2        | Uruguay
+    Santiago | 44444 | 5        | Argentina
+
+- Descomposición
+    **EMPLEADO**
+
+    E_DNI | NRO_PROY | P_UBICACION
+    ----- | -------- | --------
+    11111 | 5        | Argentina
+    22222 | 5        | Argentina
+    33333 | 2        | Uruguay
+    44444 | 5        | Argentina
+
+    **UBICACION_EMPLEADO**
+
+    E_NOMBRE | P_UBICACION
+    -------- | --------
+    Diego    | Argentina
+    Laura    | Argentina
+    Marina   | Uruguay
+    Santiago | Argentina
+
+- Esta descomposición no permite recuperar la información original.
+- Al aplicar `NATURAL JOIN` se producen tuplas espúreas.
+    
+    E_DNI | NRO_PROY | P_UBICACION | E_NOMBRE
+    ----- | -------- | --------    | --------
+    11111 | 5        | Argentina   | Diego
+    22222 | 5        | Argentina   | Diego
+    33333 | 2        | Uruguay     | Marina
+    44444 | 5        | Argentina   | Diego
+
+- **Problema**: `P_UBICACION` relaciona ambos esquemas pero no es clave primaria ni foránea de ninguno de ellos.
+
+### Pautas
+- Diseñar esquemas que puedan ser relacionads por atributos que se encuentren relacionados por condiciones de igualdad entre ellos (clave primaria/foránea).
+- Evitar relaciones que contengan atributos de matching que no sean combinación de claves primaria/foránea, ya que los JOINS pueden introducir tuplas espúreas.
+
+## Dependencias funcionales
+Herramienta formal para el análisis de esquemas. Permite detectar y describir problemas descriptos previamente.
+
+- Informalmente: restricción entre dos conjuntos de atributos `X` e `Y` de una BBDD. Los valores que toman los atributos de `Y` dependen de los valores que tomen `X`.
+- Ejemplo:
+    + **DF1: {E_DNI, P_NUMERO} ⟹ HORAS**
+        ```
+        E_DNI, P_NUMERO, HORAS, E_NOMBRE, P_NOMBRE, P_UBICACION
+        -----  --------
+          ∨       ∨       ∧
+          |       |       |
+          ∨-------∨-------∧
+        ```
+    + **DF2: E_DNI ⟹ E_NOMBRE**
+        ```
+        E_DNI, P_NUMERO, HORAS, E_NOMBRE, P_NOMBRE, P_UBICACION
+        -----  --------
+          ∨       ∨                ∧
+          |       |                |
+          ∨-------∨----------------∧
+        ```
+    + **DF3: P_NUMERO ⟹ {P_NOMBRE, P_UBICACION}**
+        ```
+        E_DNI, P_NUMERO, HORAS, E_NOMBRE, P_NOMBRE, P_UBICACION
+        -----  --------
+                  ∨                           ∧          ∧
+                  |                           |          |
+                  ∨---------------------------------------
+        ```
+
+- Formalmente:
+    + Esquema relacional de la BD posee atributos _A₁, A₂, ⋯, Aₙ_
+    + La BD se puede pensar como un esquema universal _R = {A₁, A₂, ⋯, Aₙ}_
+    + Sean _X,Y ⊆ R_, la DF indicada como _X⟹Y_ especifica una restricción sobre las posibles tuplas que pueden conformar una instancia _r_ de _R_. Para cualquier par _t₁,t₂ ∈ r_ tal que _t₁[X] = t₂[X]_, se debe cumplir que _t₁[Y] = t₂[Y]_.
+
+- DF son propiedad **semántica** de los atributos.
+- Los diseñadores de las BD deben usar su entendimiento de la semántica para especificar las DF, y deben respetarse todos los `r(R)`.
+- `r(R)` que satisface condiciones de DF se denomina instancia legal, estado legal o extensión legal de R.
+- No es posible determinar los DF de una relación a través de los valores de sus datos. Es necesario conocer el significado.
+- Una DF _puede_ existir si la cumple una instancia r(R)
+    + Para _confirmar_ la existencia, es necesario conocer la semántica de los atributos.
+    + Para _descartar_ la existencia, sólo basta con mostrar tuplas que violen esta posible DF.
+- Un conjunto de DF se denota F.
+
+## FN basadas en PK
