@@ -22,8 +22,6 @@
 
 - ¿Qué es una transacción? Describir las propiedades ACID.
 
-- ¿Cuáles son los objetivos de la normalización? Relacionar con la calidad de diseño.
-
 - Defina bases de datos distribuida. ¿Qué nuevos niveles de transparencia aparecen junto a estas bases?
 
 - ¿Qué es Data Mining? Describir las distintas técnicas.
@@ -41,14 +39,6 @@
 
 - Definir transacciones y dar y explicar las propiedades ACID.
 
-- Definir dependencia funcional.
-
-- ¿Cuando un esquema está en 2FN?
-
-- Dar un esquema que esté en 2FN pero no en 3FN. Dar una descomposición del mismo en 3FN.
-
-- Definir dependencia funcional. ¿Para qué sirve que la normalización? ¿Cómo esta relacionado con la calidad de un diseño de bases de datos?
-
 - Tenías tres relaciones y había que dar según conocimiento del dominio las dependencias funcionales y decir en qué FN estaba (idMascota, nombreMascota, nombreDuenio), (idMascota, idDiagnostico, fecha), (idDiagnostico, descripcion, medicamento). (No había una única respuesta).
 
 - Explicar bases NoSQL por documentos, explicando el concepto de documento. Mostrar cómo sería una base por documentos para el ejercicio anterior (no sé si había que hacer el DID, poner los jsons o ambos).
@@ -65,12 +55,7 @@
     1. Expresar en álgebra relacional la consulta: “devolver id de estudiante y nombre de la facultad para los estudiantes que hayan nacido despues de 1980” (universidad y facultad es lo mismo acá, es sólo para que haya que ponerle condición al join)
     2. Dar dos estrategias de resolución de esta query, indicando cuantos bytes se transfieren por la red entre las maquinas. Por ejemplo “N1 y N2 mandan todo a N3”
 
-
 - Definir dependencia funcional. Dado {idAlumno, nombreAlumno, idCurso, idProfesor} dar un conjunto de dependencias funcionales. Decir en qué forma normal se encuentra.
-
-- Definir clave candidata y clave primaria. Definir 2FN.
-
-- Para qué sirve la normalización? Cómo se relaciona con las pautas de diseño de una base de datos? Describir anomalías que puede presentar una base de datos desnormalizada.
 
 - Qué es una transacción? Dar un ejemplo de algún dominio. Por qué es importante el control de concurrencia?
 
