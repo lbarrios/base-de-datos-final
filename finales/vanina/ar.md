@@ -1,3 +1,9 @@
+- Definir esquema.
+
+- Definir tupla.
+
+- Definir atributo.
+
 - Definir clave candidata.
 
 - Definir clave primaria.
