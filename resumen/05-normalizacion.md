@@ -136,7 +136,7 @@ Tamar    | 55555 | **_NULL_** | **_NULL_**
 - Evitar asignar atributos a una relación si estos pueden ser NULL frecuentemente
 - Si los NULL son inevitables, asegurar que sean situaciones excepcionales.
 
-## Pauta 3: Tuplas Espúreas
+## Pauta 4: Tuplas Espúreas
 Las tuplas espúreas representan información no válida.
 
 - Esquema original
