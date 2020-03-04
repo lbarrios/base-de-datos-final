@@ -88,7 +88,7 @@ Abstracción en la cual una interrlación es tratada como una entidad de alto ni
 - Relación: esquema (intención) y extensión (estado o instancia)
     + Esquema: **R**(A₁, A₂, ⋯, Aₙ) consiste en una relación **R** y un conjunto de atributos {A₁, A₂, ⋯, Aₙ}
     + Aridad: cantidad de atributos que tiene.
-- Extensión: dado el esquema R(A₁, A₂, ⋯, Aₙ), la extensión **r(R)** = **{t₁, t₂, ⋯, tₘ)**, conjunto de tuplas<Atributo,Valor> con **tᵢ = {<A₁: vᵢ₁}>, <A₂: vᵢ₂>, ⋯, <Aₘ: vᵢₘ>}**.
+- Extensión: dado el esquema R(A₁, A₂, ⋯, Aₙ), la extensión **r(R)** = **{t₁, t₂, ⋯, tₘ}**, conjunto de tuplas<Atributo,Valor> con **tᵢ = (<A₁: vᵢ₁}>, <A₂: vᵢ₂>, ⋯, <Aₘ: vᵢₘ>)**.
     + ∀<Aⱼ, vᵢⱼ>, vᵢⱼ ∈ **dom(Aⱼ)**
     + Definición alternativa, **t = {v₁, v₂, ⋯, vₙ}** si consideramos el orden dentro de la tupla.
 - La extensión es subconjunto del producto cartesiano de una lista de dominios.
