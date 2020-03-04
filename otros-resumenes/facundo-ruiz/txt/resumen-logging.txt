@@ -1,0 +1,56 @@
+Recuperación:
+El DBMS debe procurar que al recibir una transacción todas sus operaciones sean ejecutadas exitosamente, almacenando sus resultados en la BD (commit), o que ninguna operación tenga efecto sobre ella (abort). Si ocurre una falla, en el primer caso el DBMS debe asegurarse que los cambios pasen a disco y en el segundo, que si ya se realizaron operaciones sus cambios se deshagan ya que pudieron haber dejado a la base de datos con valores inconsistentes.
+Entre las posibles fallas de un sistema tenemos:
+- Fallo de la Computadora (system crash): Error de HW, SW o red.
+- Falla en la transacción o sistema: Error en la lógica de la programación (división por cero) o interrupción del usuario.
+- Errores locales o condiciones de excepción detectadas: Los datos necesarios de la transacción no fueron encontrados.
+- Ejecución del Control de Concurrencia: Abort por violar la serialización o producir un deadlock. Estas suelen reiniciarse posteriormente.
+- Falla de disco: Durante una lectura o escritura.
+- Problemas físicos o catástrofes: Suministro eléctrico, aire acondicionado, incendio, robo, sabotaje, entre otros.
+De ellas, salvo las dos últimas, el sistema deberá poder mantener la suficiente información para reestablecerse rápidamente en un modo a prueba de fallas. De esto se encarga el subsistema de recovery del DBMS a través de los módulos cache manager (CM), recovery manager (o log manager) y un archivo log en disco.
+
+Log: Mantiene un registro de todas las operaciones de las transacciones que afectan a la BD de manera de reestablecer el sistema ante fallas. Es incremental y secuencial, se guarda en disco pero no se salva de fallas a disco ni catástrofes, por lo que períodicamente es preferente guardar una copia de seguridad en otro dispositivo. Su presencia hace que para que una transacción se considere commiteada sus cambios debieron haber sido registrados en el log.
+Entre los registros que se pueden almacenar en el log tenemos:
+- Start record (<START Ti>): El incio de la transacción Ti.
+- Commit record (<COMMIT Ti>): El final exitoso de la transacción Ti indicando que sus cambios deben guardarse permanentemente en la BD.
+- Abort record (<ABORT Ti>): El final no exitoso de una transacción Ti, indicando que falló y sus cambios deben ser deshechos de la BD.
+- Update record: La actualización de un ítem X por parte de la transacción Ti.
+Nótese que una transacción se considera incompleta si no contiene un commit record ó abort record, que sólo pueden estar al final de ella.
+El método de logging determina la información que guardará el update record en el log y cómo operará el RM ante una falla. Entre ellos tenemos undo logging, redo logging y undo/redo logging.
+
+Undo logging:
+Se basa en permitir que las transacciones incompletas escriban a disco y deshacer sus cambios si no llegaron a hacer commit antes de la falla. Aquí los update records son de la forma <Ti, X, v> indicando que Ti actualizó el valor de X cuya imagen anterior era v. Cada update record se baja a disco antes de bajar el nuevo valor de X y el commit record se baja después de todos los cambios de la transacción, indicando que son válidos.
+Al producirse una falla:
+1) Se recorre el log desde el final hacia atrás marcando las transacciones según si se encuentra un commit record o abort record.
+2) Por cada update record <Ti, X, v> si se encontró un commit o abort record para Ti, saltearlo. Si no, asignar v a X.
+3) Agregar un abort record al log por cada Ti incompleta y bajarlo a disco.
+Este método es conveniente al tener pocas transacciones incompletas ya que deriva en pocos cambios a deshacer. Además, se pueden ir bajando datos a la BD durante la escritura del log para ahorrar tiempo. No obstante, requiere leer todo el archivo de log y que los ítems se bajen a disco justo después de que la transacción termine, aumentando la cantidad de operaciones de entrada y salida.
+
+Redo logging: Se basa en tomar las transacciones completas cuyos cambios no llegaron a bajarse a disco. Sus update record son de la forma <Ti, X, v> donde la transacción Ti actualizó a X con el valor v. Estos se bajan a disco antes que el nuevo valor de X pero el commit record también, de manera de asegurar en el log los cambios a escribir en la BD.
+Al producirse una falla:
+1) Se recorre el log una primera vez identificando las transacciones completas e incompletas.
+2) En el segundo recorrido de atrás hacia adelante, por cada update record <Ti, X, v> si Ti es incompleta no hacer nada; pero si no asignar v a X.
+3) Por cada Ti incompleta agregar un abort record al log y bajarlo a disco.
+Nótese que puede optarse por borrar los registros de una transacción abortada o commiteada en caso de haber una más reciente que haya actualizado sus ítems. Sin embargo, en la recuperación el archivo de log debe leerse dos veces y como las transacciones suelen ser completas va a haber muchos cambios a rehacer. A su vez, como los cambios no pueden bajarse a la BD hasta luego del commit es necesario mantener los bloques modificados en un buffer.
+
+Undo/Redo logging:
+Es una combinación de los anteriores que se basa en atacar tanto transacciones incompletas como completas. Sus update records son de la forma <Ti, X, v0, v1> donde Ti actualizó el valor del ítem X de v0 a v1. Cada uno de ellos se baja a disco antes de acutalizar X. Luego se baja su commit record. 
+Con ello, si ocurre una falla:
+1) Se aplica UNDO a las transacciones incompletas en orden inverso (usando v0 para actualizar el valor de X por cada update record).
+2) Se aplica REDO a las transacciones completas en orden (asignado v1 a X por cada update record).
+3) Agregar un abort record a cada transacción incompleta y bajarlos a disco.
+Esto hace que el sistema sea más flexible a los escenarios de fallas, pero para ello debe guardar más información y el trabajo en caso de producirse es mayor.
+
+Checkpoint:
+Considerando que regularmente es necesario bajar los datos del log al disco ya que de expandirse lo suficiente se perdería mucho tiempo en la recuperación, podemos implementar un sistema de checkpoints. Este se basa en dos técnicas:
+- Actualizar el log junto con la lista de transacciones commiteadas y abortadas hasta el momento de manera de indicar las modificaciones escritas y deshechas que no deben realizarse.
+- Escribir las imágenes posteriores a las modificaciones efectuadas por las transacciones commiteadas o las imágenes previas de las abortadas a disco. Esta es opcional.
+En base a ello, los mecanismos de checkpoint son:
+- Quiescente: Este deja de aceptar nuevas transacciones mientras espera a que las activas (las empezadas sin registro de commit o abort) terminen. Luego agrega al log el registro <CKPT> y lo baja a disco (no hay transacciones activas). Recién en ese momento puede aceptar nuevas transacciones. En la recuperación sólo aplica el método UNDO desde el final del log hasta el último checkpoint (el primero encontrado).
+- No quiescente: Este sigue aceptando transacciones pero efectúa un flush cuando todas las activas a su inicio terminan. Para eso usa el registro <START CKPT (...)> para indicar su inicio en el log con sus transacciones activas y <END CKPT> para indicar que terminaron.
+Sus etapas y recuperación varían según el método de logging:
+-- UNDO: Parte de agregar el registro <START CKPT (...)> al log y bajarlo a disco. Seguidamente, se espera a que estas transacciones terminen, sin restringir que empiecen nuevas. Al terminar se agrega el registro <END CKPT>, bajándolo a disco.
+En la recuperación se empieza recorriendo desde el final. En caso de encontrar un <END CKPT> se procede hasta hallar un <START CKPT (T1, ..., Tk)>. Seguidamente, se continua recorriendo hasta hallar el <START Ti> más antiguo entre las Ti del registro. Finalmente se procede con el método normal.
+-- REDO: Parte similar al anterior, agregando el registro <START CKPT (...)> y bajándolo a disco. Ahora, espera a que se bajen a disco los cambios de todas las transacciones ya commiteadas al momento de iniciar el checkpoint. Finalmente, se agrega el registro <END CKPT> al log y se lo baja a disco.
+En la recuperación se indentifica al último checkpoint finalizado correctamente (el último con un <END CKPT> posterior). Luego, desde su registro <START CKPT (...)> se aplica REDO a todas las transacciones que iniciaron luego de su inicio o estaban activas en ese momento.
+-- UNDO/REDO: Agrega al log los registros <START CKPT (...)> y <END CKPT> como en el caso REDO. La diferencia recae en que antes de aplicar REDO sobre las completas aplica UNDO desde el final hasta encontrar el <START Ti> más antiguo del último <START CKPT (...)> para las incompletas.

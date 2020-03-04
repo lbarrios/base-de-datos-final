@@ -1,0 +1,74 @@
+\section*{Recuperación}
+El DBMS debe procurar que al recibir una transacción todas sus operaciones sean ejecutadas exitosamente, almacenando sus resultados en la BD (commit), o que ninguna operación tenga efecto sobre ella (abort). Si ocurre una \textbf{falla}, en el primer caso el DBMS debe asegurarse que los cambios pasen a disco y en el segundo, que si ya se realizaron operaciones sus cambios se deshagan ya que pudieron haber dejado a la base de datos con valores inconsistentes. \\
+Entre las posibles fallas de un sistema tenemos:
+\begin{itemize}
+    \item \textbf{Fallo de la Computadora (system crash):} Error de HW, SW o red.
+    \item \textbf{Falla en la transacción o sistema:} Error en la lógica de la programación (división por cero) o interrupción del usuario.
+    \item \textbf{Errores locales o condiciones de excepción detectadas:} Los datos necesarios de la transacción no fueron encontrados.
+    \item \textbf{Ejecución del Control de Concurrencia:} Abort por violar la serialización o producir un deadlock. Estas suelen reiniciarse posteriormente.
+    \item \textbf{Falla de disco:} Durante una lectura o escritura.
+- Problemas físicos o catástrofes: Suministro eléctrico, aire acondicionado, incendio, robo, sabotaje, entre otros.
+\end{itemize}
+De ellas, salvo las dos últimas, el sistema deberá poder mantener la suficiente información para reestablecerse rápidamente en un modo a prueba de fallas. De esto se encarga el \textbf{subsistema de recovery} del DBMS a través de los módulos cache manager (CM), recovery manager (o log manager) y un archivo \textbf{log} en disco.
+
+\subsection*{Log}
+Mantiene un \textbf{registro} de todas las operaciones de las transacciones que afectan a la BD de manera de reestablecer el sistema ante fallas. Es incremental y secuencial, se guarda en disco pero no se salva de fallas a disco ni catástrofes, por lo que períodicamente es preferente guardar una \textbf{copia de seguridad} en otro dispositivo. Su presencia hace que para que una transacción se considere \textbf{commiteada} sus cambios debieron haber sido registrados en el log. \\
+Entre los registros que se pueden almacenar en el log tenemos:
+\begin{itemize}
+    \item \textbf{Start record (\texttt{<START $T_i$>}):} El incio de la transacción $T_i$.
+    \item \textbf{Commit record (\texttt{<COMMIT $T_i$>}):} El final exitoso de la transacción $T_i$ indicando que sus cambios deben guardarse permanentemente en la BD.
+    \item \textbf{Abort record (\texttt{<ABORT $T_i$>})}: El final no exitoso de una transacción $T_i$, indicando que falló y sus cambios deben ser deshechos de la BD.
+    \item \textbf{Update record:} La actualización de un ítem $X$ por parte de la transacción $T_i$.
+\end{itemize}
+Nótese que una transacción se considera \textbf{incompleta} si no contiene un commit record ó abort record, que sólo pueden estar al final de ella. \\
+El \textbf{método de logging} determina la información que guardará el update record en el log y cómo operará el RM ante una falla. Entre ellos tenemos undo logging, redo logging y undo/redo logging.
+
+\subsection*{Undo logging}
+Se basa en permitir que las \textbf{transacciones incompletas} escriban a disco y deshacer sus cambios si no llegaron a hacer commit antes de la falla. Aquí los update records son de la forma \texttt{<$T_i$, X, v>} indicando que $T_i$ actualizó el valor de $X$ cuya imagen anterior era $v$. Cada update record se baja a disco antes de bajar el nuevo valor de $X$ y el commit record se baja después de todos los cambios de la transacción, indicando que son válidos. \\
+Al producirse una falla:
+\begin{enumerate}
+    \item Se recorre el log desde el final hacia atrás marcando las transacciones según si se encuentra un commit record o abort record.
+    \item Por cada update record \texttt{<$T_i$, X, v>} si se encontró un commit o abort record para $T_i$, saltearlo. Si no, asignar $v$ a $X$.
+    \item Agregar un abort record al log por cada $T_i$ incompleta y bajarlo a disco.
+\end{enumerate}
+Este método es conveniente al tener \textbf{pocas transacciones incompletas} ya que deriva en pocos cambios a deshacer. Además, se pueden ir bajando datos a la BD durante la escritura del log para ahorrar tiempo. No obstante, requiere \textbf{leer todo el archivo de log} y que los ítems se bajen a disco justo después de que la transacción termine, aumentando la cantidad de operaciones de entrada y salida.
+
+\subsection*{Redo logging}
+Se basa en tomar las \textbf{transacciones completas} cuyos cambios no llegaron a bajarse a disco. Sus update record son de la forma \texttt{<$T_i$, X, v>} donde la transacción $T_i$ actualizó a $X$ con el valor $v$. Estos se bajan a disco antes que el nuevo valor de $X$ pero el commit record también, de manera de asegurar en el log los cambios a escribir en la BD. \\
+Al producirse una falla:
+\begin{enumerate}
+    \item Se recorre el log una primera vez identificando las transacciones completas e incompletas.
+    \item En el segundo recorrido de atrás hacia adelante, por cada update record \texttt{<$T_i$, X, v>} si $T_i$ es incompleta no hacer nada; pero si no asignar $v$ a $X$.
+    \item Por cada $T_i$ incompleta agregar un abort record al log y bajarlo a disco.
+\end{enumerate}
+Nótese que puede optarse por borrar los registros de una transacción abortada o commiteada en caso de haber una más reciente que haya actualizado sus ítems. Sin embargo, en la recuperación \textbf{el archivo de log debe leerse dos veces} y como las transacciones suelen ser completas va a haber muchos cambios a rehacer. A su vez, como los cambios no pueden bajarse a la BD hasta luego del commit es necesario mantener los bloques modificados en un \textbf{buffer}.
+
+\subsection*{Undo/Redo logging}
+Es una combinación de los anteriores que se basa en atacar tanto \textbf{transacciones incompletas como completas}. Sus update records son de la forma \texttt{<$T_i$, X, $v_0$, $v_1$>} donde $T_i$ actualizó el valor del ítem $X$ de $v_0$ a $v_1$. Cada uno de ellos se baja a disco antes de acutalizar $X$. Luego se baja su commit record. \\
+Con ello, si ocurre una falla:
+\begin{enumerate}
+    \item Se aplica \textbf{UNDO} a las transacciones incompletas en orden inverso (usando $v_0$ para actualizar el valor de X por cada update record).
+    \item Se aplica \textbf{REDO} a las transacciones completas en orden (asignado $v_1$ a $X$ por cada update record).
+    \item Agregar un abort record a cada transacción incompleta y bajarlos a disco.
+\end{enumerate}
+Esto hace que el sistema sea más \textbf{flexible} a los escenarios de fallas, pero para ello debe guardar más información y el trabajo en caso de producirse es mayor.
+
+\subsection*{Checkpoint}
+Considerando que regularmente es necesario bajar los datos del log al disco ya que de expandirse lo suficiente se perdería mucho tiempo en la recuperación, podemos implementar un \textbf{sistema de checkpoints}. Este se basa en dos técnicas:
+\begin{itemize}
+    \item Actualizar el log junto con la lista de transacciones commiteadas y abortadas hasta el momento de manera de indicar las modificaciones escritas y deshechas que no deben realizarse.
+    \item Escribir las imágenes posteriores a las modificaciones efectuadas por las transacciones commiteadas o las imágenes previas de las abortadas a disco. Esta es opcional.
+\end{itemize}
+En base a ello, los mecanismos de checkpoint son:
+\begin{itemize}
+    \item \textbf{Quiescente:} Este deja de aceptar nuevas transacciones mientras espera a que las activas (las empezadas sin registro de commit o abort) terminen. Luego agrega al log el registro \texttt{<CKPT>} y lo baja a disco (no hay transacciones activas). Recién en ese momento puede aceptar nuevas transacciones. En la recuperación sólo aplica el método \textbf{UNDO} desde el final del log hasta el último checkpoint (el primero encontrado).
+    \item \textbf{No quiescente:} Este sigue aceptando transacciones pero efectúa un \textbf{flush} cuando todas las activas a su inicio terminan. Para eso usa el registro \texttt{<START CKPT (...)>} para indicar su inicio en el log con sus transacciones activas y \texttt{<END CKPT>} para indicar que terminaron. \\
+    Sus etapas y recuperación varían según el método de logging:
+    \begin{itemize}
+        \item \textbf{UNDO:} Parte de agregar el registro \texttt{<START CKPT (...)>} al log y bajarlo a disco. Seguidamente, se espera a que estas transacciones terminen, sin restringir que empiecen nuevas. Al terminar se agrega el registro \texttt{<END CKPT>}, bajándolo a disco. \\
+        En la recuperación se empieza recorriendo desde el final. En caso de encontrar un \texttt{<END CKPT>} se procede hasta hallar un \texttt{<START CKPT ($T_1$, ..., $T_k$)>}. Seguidamente, se continua recorriendo hasta hallar el \texttt{<START $T_i$>} más antiguo entre las $T_i$ del registro. Finalmente se procede con el método normal.
+        \item \textbf{REDO:} Parte similar al anterior, agregando el registro \texttt{<START CKPT (...)>} y bajándolo a disco. Ahora, espera a que se bajen a disco los cambios de todas las transacciones ya commiteadas al momento de iniciar el checkpoint. Finalmente, se agrega el registro \texttt{<END CKPT>} al log y se lo baja a disco. \\
+        En la recuperación se indentifica al último checkpoint finalizado correctamente (el último con un \texttt{<END CKPT>} posterior). Luego, desde su registro \texttt{<START CKPT (...)>} se aplica \textbf{REDO} a todas las transacciones que iniciaron luego de su inicio o estaban activas en ese momento.
+        \item \textbf{UNDO/REDO:} Agrega al log los registros \texttt{<START CKPT (...)>} y \texttt{<END CKPT>} como en el caso \textbf{REDO}. La diferencia recae en que antes de aplicar \textbf{REDO} sobre las completas aplica \textbf{UNDO} desde el final hasta encontrar el \texttt{<START $T_i$>} más antiguo del último \texttt{<START CKPT (...)>} para las incompletas.
+    \end{itemize}
+\end{itemize}

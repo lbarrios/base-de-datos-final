@@ -1,0 +1,82 @@
+Optimización:
+Query optimizer:
+Una query (consulta) tiene muchas formas de ser ejecutada para obtener el set deseado. Cada una define un plan (query plan) y para elegir cuál ejecutar el DBMS, cuenta con un módulo llamado query optimizer.
+Ahora, encontrar el plan óptimo es un problema NP-completo por lo que el módulo debe emplear otras técnicas para hallarlo en un tiempo razonable. Entre ellas tenemos:
+- Uso de heurísticas: Se aplican transformaciones del álgebra relacional con la propiedad de mantener los resultados obtenidos. Estas suelen mejorar la performance pero no siempre.
+- Estimación de selectividad: Se hace uso de la información en la base de datos para estimar el grado de selectividad de la consulta (cantidad de tuplas devueltas). Esto permite darnos una idea de su costo.
+- Índices y tipo de archivo: el plan elegido depende fuertemente de los índices dispuestos en las tablas y cómo se ordenan físicamente los datos en disco.
+Una vez obtenido el plan, el code generator se encarga de generar su código correspondiente y el runtime database processor de ejecutarlo.
+
+Métricas de relaciones:
+Dada una relación R tenemos una serie de parámetros del catálogo que podemos medir para optimizar una consulta:
+- Bloque: porción de datos levantada por cada lectura a disco.
+- LB: longitud del bloque.
+- BR: Cantidad de bloques ocupados por R.
+- FBR: Factor de bloqueo de R, es decir, la cantidad de tuplas de R que entran en un bloque.
+- LR: Longitud de una tupla de R.
+- TR: Cantidad de tuplas de R.
+- IR,A: Imagen del atributo A de R, es decir, cantidad de valores distintos de la columna A en R.
+- XI: Altura del árbol de búsqueda (B+) con índice I.
+- FBI: Factor de bloqueo de I, es decir, cantidad de tuplas del índice I que entran en un bloque.
+- BHI: Cantidad de bloques que ocupan todas las hojas del índice I.
+- MBxB: Cantidad máxima de bloques en un bucket del índice hash I.
+- CBuI: Cantidad de buckets del índice hash I.
+- B: Cantidad de bloques que entran en memoria principal.
+
+Almacenamiento físico:
+Las relaciones se almacenan en archivos y cada tupla tiene asociado un identificador llamado rid (register id), que no es un atributo de la relación. Estos archivos pueden ser:
+- Heap files: Son el tipo de archivo más simple consistente en una colección desordenada de registros agrupados en bloques. Aquí su costo de exploración completa (scan), búsqueda por igualdad (A = c) y búsqueda por rango (c <= A <= d) son BR (lineal en la cantidad de bloques). Puede tener páginas para datos y otras para el mapa de reserva de índices (IAM, Index Allocation Table) que sirve para saber dónde están guardados los datos en disco.
+- Sorted file: Estos mantienen sus registros ordenados según el valor de determinados campos. Si bien su costo de exploración completa sigue siendo BR, los de búsqueda por igualdad y búsqueda por rango son log2(BR) + [T'/FBR], donde T' es la cantidad de tuplas que cumplen con el criterio de búsqueda (y FBR la cantidad de tuplas por bloque de R).
+
+Índices: son diccionarios de claves (no necesariamente únicas) asociados a la relación. Cada una se corresponde con una o más columnas (atributos) de ella y su valor asociado es el de sus registros (o tupla). Puede ser el registro completo, su rid a una lista con los rid de todos los registros asociados a ella.
+De estos se tienen dos tipos:
+- Clustered: Dicta el orden físico de los datos del archivo, que sólo puede tener uno definido. Se almacenan en forma de árbol de búsqueda balanceado de páginas (B+) de hasta 3 niveles donde sus hojas se corresponden a los datos y cada nodo intermedio referencia en sus filas la dirección física y el valor mínimo de la clave de la página (salvo en la primera que guarda NULL para insertar una fila con clave más baja en la tabla de forma óptima).
+- Non-clustered: No determinan el orden de los datos y se almacenan en una estructura por fuera de ellos. Se parecen a los anteriores en estructura con la salvedad de que en sus hojas almacenan el valor de la clave y un rowid, que según si se combinan con una heap table o clustered index, es su dirección física o la clave de su fila (respectivamente). En los nodos intermedios se guarda la dirección física de la página con el valor mínimo de clave. Puede guardarse el rowid en caso de haber más de un índice definido.
+- Hash estático: Se define como una tabla de hash con una cantidad estática de buckets. Es muy útil para realizar búsquedas por igualdad ya que su costo es MBxBI (cantidad máxima de bloques por bucket). No obstante, para el resto de las operaciones requieren de un barrido lineal (file scan).
+Los índices pueden ser densos o no según si almacenan una entrada por cada registro en la base de datos o sólo algunos. Además son primarios si guardan registros completos de archivos (sólo uno por tabla) o secundarios si sus valores son rids (puede haber más de uno por tabla).
+
+Árbol de búsqueda B+: Es el árbol balanceado en el que se basan los primeros índices. Siempre tienen una página hoja y otra raíz a menos que la tabla entre toda en una sola. Se busca que los datos no se solapen entre páginas y de sobrar lugar se pueden agregar tablas de índices.
+Cada nodo interno (y la raíz) tiene una cantidad de hijos y claves dada por un parámetro d (entre d/2 y d). Las hojas tienen información asociada a la clave de los registros del archivo y se pueden recorrer como listas doblemente enlazadas. Esto hace que la estructura sea recomendada para acceder a rangos de claves.
+Si bien para su exploración completa es necesario un file scan, para las búsquedas cada índice tiene cierta optimización:
+- Clustered: En la búsqueda por igualdad se recorre el árbol en busca de la primera ocurrencia de la clave. Con ella se busca su registro asociado en el archivo y partir de este punto se lo recorre mientras se hallen ocurrencias de la clave. Esto hace que su costo sea de: XI + [T'/FBR].
+Para la búsqueda por rango el costo es el mismo ya que se emplea el msimo método para hallar el primer elemento del rango y recorrer el archivo desde ahí.
+- Non-clustered: La búsqueda por igualdad es similar al caso clustered pero al llegar a las hojas del árbol se las recorre secuencialmente mientras haya ocurrencias de la clave. Luego, cada una se leen sus registros asociados. Esto lleva su costo a: XI - 1 + [T'/FBI] + T'.
+En la búsqueda por rango el costo es el mismo ya que se sigue el mismo procedimiento para hallar el primer elemento del rango y a partir de este todas sus ocurrencias (leyendo sus registros asociados en el archivo).
+
+Operadores del plan de ejecución:
+Las consultas se procesan por etapas: Parse (validación de la sintaxis de la sentencia SQL con su transformación inicial a árbol de ejecución), Bind (vínculo de objetos y carga de metadata), Optimize (generación de plan de ejecución) y Execute (ejecución del plan). En un plan de ejecución, cada nodo es un operador que implementa al menos los métodos:
+- Open(): Se inicializa el operador y se configuran las estructuras de datos requeridas.
+- GetRow(): Se toma una fila del operador.
+- Close(): Se finaliza el operador limpiando las estructuras y datos necesarios.
+Con ellos tenemos dos operadores de acceso a datos:
+- scan: Barre una estructura. Puede ser file scan si recorre todas las entradas de un archivo, mientras que index scan, las de un índice.
+- seek: Recorre una estructura en base a un índice. Tenemos dos casos: un índice árbol B+ con un predicado como una conjunción de términos con atributos de un prefijo de su clave (su tupla); o un índice hash con un predicado como una conjunción de términos con todos los atributos del índice. En el caso de un índice non-clustered, al pasar de una hoja a otra estructura se efectúa un bookmark lookup (por rid o clave).
+
+Juntas:
+Tenemos 3 tipos de juntas entre relaciones:
+- Nested Loops Join: Son las más básicas de implementar ya que buscan los elementos recorriendo una tabla a partir de la otra. Son efectivas cuando el inner input es más grande que el outer input y el primero está indexado. Según si el índice forma parte del atributo del join se tiene el Index Nested Loop Join (INLJ) o el Block Nested Loop Join (BNLJ). El costo del primero depende del tipo de índice, siendo el segundo de fuerza bruta. Además el predicado puede no ser de igualdad.
+- Merge Join: Recorre ordenamente las tablas a través de un scan. Su costo se basa en el algoritmo de ordenamiento (de necesitarse a través de un operador) y el merge (lineal en el tamaño de ambas tablas por condición de igualdad).
+- Hash Join: Se usa para procesar entradas largas, no ordenadas y sin índices eficientes. Su predicado es de igualdad.
+
+Otros operadores:
+- Filtro: Se pueden usar los operadores para las condiciones impuestas por la cláusula HAVING, que son eficientes para operar sobre la memoria. 
+- Agrupamiento (agregación): stream y hash. El primero se usa siempre que no se tenga la cláusula GROUP BY y en caso de hacerlo, los datos deben estar ordenados.
+- Compute Scalar: Realiza operaciones de conversión, cálculo de datos y otras de cómputo matemático.
+- Union: Permiten agrupar relaciones y se dividen en merge, hash y concat.
+
+Optimizaciones y heurísticas:
+- Algebráicas: Estas buscan mejorar la performance de la consulta más allá de su representación física aprovechando las propiedades algebráicas del AR:
+-- Cascada de select/project por conjunción.
+-- Conmutatividad de select/select con respecto a project/producto cartesiano (y la junta)/unión e intersección/select y project con respecto al producto cartesiano (y la junta).
+-- Asociatividad del producto cartesiano, junta, unión e intersección.
+- La materialización es la escritura de un resultado en disco. Por otra parte, el pipelining se da entre dos operaciones O1 y O2 si las tuplas resultantes de la primera pasan a través de un stream en memoria a la segunda. Esto hace que se ahorre el costo de output de O1 y de input de O2. Operaciones que necesitan todas las relaciones de antemano, como las juntas, no se pueden pipelinear.
+- La integridad referencial permite evitar consultar a una tabla a través de juntas.
+- Considerar sólo árboles sesgados a izquierda permite limitar los árboles candidatos a analizar.
+- Al descomponer las selecciones conjuntivas podemos aprovechar los índices de cada relación por separado.
+- Tomar las selecciones lo más cercano posible a las hojas del árbol reduce la cantidad de datos a materializar al seleccionar prematuramente las tuplas que nos interesan.
+- Reemplazar productos cartesianos seguidos de selecciones por juntas.
+- Descomponer las listas de atributos de proyecciones y llevarlas lo más cerca posible de las hojas.
+- Los hints son instrucciones para el motor de búsqueda para cambiar su operación. Se especifican a través de la cláusula option y sólo cambian su procesamiento, no su semántica (retornar rápidamente una serie de filas, buscar usando un índice en específico, recompilar una consulta, optimizar en base a un parámetro dado o parameter sniffing, entre otras).
+- Para comparar y analizar las implementaciones de una consulta tenemos las estadísticas. Entre sus métricas, muestran la distribución de los datos en un histograma contando límites por paso, rango de valores, cantidad estimada promedio, valores distintivos y cantidad de duplicados promedio.
+- Para optimizar lecturas se pueden utilizar los atributos buscables a través de índices (SARGable: search-ARGument-table). Estos se aplican sólo cuando los predicados tienen condiciones de inclusión. En los índices compuestos depende del predicado de su primera columna.
+- La cobertura de un índice permite guardar partes selectivas en base a un criterio dado y con ello retornar la información necesaria o que se pueda llegar a usar en el futuro. También se puede filtrar el indexado para, por ejemplo, tomar todos los valores no nulos y así recorrer la tabla más rápidamente.

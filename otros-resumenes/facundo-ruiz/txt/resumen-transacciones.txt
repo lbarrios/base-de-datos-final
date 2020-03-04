@@ -1,0 +1,29 @@
+Transacciones:
+Conceptos:
+Son conjuntos de instrucciones que al ejecutarse forman una unidad lógica de procesamiento. Pueden tener uno o más accesos a la BD a través de diversas operaciones: inserción, eliminación, modificación, etc.
+Las transacciones pueden ser read-write o read-only según si actualizan o no los ítems de la BD. Los ítems leídos conforman su read-set y los actualizados su write-set. El tamaño de cada uno viene dado por su granularidad (registro, bloque de disco, valor) la cual determina su identificador (número, dirección física).
+Entre sus operaciones tenemos:
+- read_item(X): Toma la dirección del bloque de disco del item X, copia su contenido al buffer de memoria principal (de no haberlo hecho) y finalmente copia el item X del buffer a la variable X del programa.
+- write_item(X): Similar al anterior con la diferencia de que se copia el contenido de la variable X del programa al ítem X del buffer y este es luego almacenado en memoria, según la política de copia de datos a disco (depende de la caché, SO y recovery manager).
+
+Propiedades ACID:
+En los sistemas de control de concurrencia y recovery procuramos  que se cumplan una serie de propiedades:
+- Atomicity: Las transacciones son unidades atómicas, por lo que se ejecutan en su completitud o no se ejecutan. Depende del subsistema de recovery del DBMS.
+- Consistency preservation: La transacción al ejecutarse lleva la BD de un estado consistente a otro. Depende de que los programadores cumplan con las restricciones de integridad impuestas, ya que la BD no tiene manera de verificarlo automáticamente.
+- Isolation: La ejecución de una transacción no debe interferir con la de otra, es decir, debe simular ser aislada incluso al ejecutarse a la vez. Depende del subsistema de control de concurrencia y puede ser de varios niveles: 0 (sin sobreescribir dirty reads), 1 (sin lost updates), 2 (sin lost updates ni dirty reads) y 3 (nivel 2 sin repeatable reads).
+- Durability: Los cambios aplicados a una BD por una transacción commiteada deben perdurar ante fallos. Depende del subsistema de recovery del DBMS.
+
+Subsistema de manejo de transacciones:
+Este subsistema del DBMS se conforma de los siguientes módulos:
+- Transaction manager (TM): Encargado de preprocesar y ejecutar las transacciones en coordinación con el resto. Dentro de ellas, las operaciones tienen un orden fijo y pueden terminar en commit o abort.
+- Scheduler (planificador): Controla el orden de ejecución de las transacciones en base a una serie de reglas definidas según el paradigma.
+- Recovery manager (Recovery manager (RM o log manager): Encargado de asegurar la durabilidad y atomicidad de las transacciones. Para ello interactúa con el buffer manager (BM) a través de las siguientes operaciones:
+-- INPUT(X): Copia el bloque de disco del ítem X a un buffer de memoria.
+-- READ(X, t): Copia el contenido del ítem X del buffer de memoria a la variable temporal t en memoria local.
+-- WRITE(X, t): Copia el valor de la variable local t al ítem X en un buffer de memoria.
+-- OUTPUT(X): Copia el bloque conteniendo al ítem X del buffer de memoria a disco.
+-- FLUSH LOG: Ordena al buffer manager escribir los registros del log a disco.
+- Cache manager (CM): encargado de manejar las transferencias entre el disco y el almancenamiento no volatil. Entre sus operaciones tenemos:
+-- Fetch(X): Toma un slot vacío de la caché c, copia en este el valor del ítem X de disco, inicializa su dirty bit indicando que puede ser modificado con respecto a disco y actualiza el directorio de esta memoria para indicar que este slot es ahora ocupado por el ítem X.
+-- Flush(X): Escribe el contenido del ítem X de caché a disco. Se puede efectuar automáticamente si al hacer Fetch(Y) no hay espacio para el ítem Y en caché.
+-- Pin & Unpin

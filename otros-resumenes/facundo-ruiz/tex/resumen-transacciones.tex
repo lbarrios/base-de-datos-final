@@ -1,0 +1,38 @@
+﻿\section*{Transacciones}
+Son conjuntos de instrucciones que al ejecutarse forman una \textbf{unidad lógica de procesamiento}. Pueden tener uno o más accesos a la BD a través de diversas operaciones: inserción, eliminación, modificación, etc. \\
+Las transacciones pueden ser \textbf{read-write} o \textbf{read-only} según si actualizan o no los ítems de la BD. Los ítems leídos conforman su \textbf{read-set} y los actualizados su \textbf{write-set}. El tamaño de cada uno viene dado por su \textbf{granularidad} (registro, bloque de disco, valor) y esta determina su identificador (número, dirección física). \\
+Entre sus operaciones tenemos:
+\begin{itemize}
+    \item \textbf{read\_item(X):} Se toma la dirección del bloque de disco del item X, se copia su contenido al buffer de memoria principal (de no haberlo hecho) y finalmente se copia el item X del buffer a la variable X del programa.
+    \item \textbf{write\_item(X):} Similar al anterior con la diferencia de que se copia el contenido de la variable X del programa al ítem X del buffer y este es luego almacenado en memoria, según la \textbf{política} de copia de datos a disco (depende de la caché, SO y recovery manager).
+\end{itemize}
+
+\subsection*{Propiedades ACID}
+En los sistemas de control de concurrencia y recovery procuramos que se cumplan una serie de propiedades:
+\begin{itemize}
+    \item \textbf{Atomicity:} Las transacciones son unidades atómicas, por lo que se ejecutan en su completitud o no se ejecutan. Depende del subsistema de recovery del DBMS.
+    \item \textbf{Consistency preservation:} La transacción al ejecutarse lleva la BD de un estado consistente a otro. Depende de que los programadores cumplan con las restricciones de integridad impuestas, ya que la BD no tiene manera de verificarlo automáticamente.
+    \item \textbf{Isolation:} La ejecución de una transacción no debe interferir con la de otra, es decir, debe simular ser aislada incluso al ejecutarse a la vez. Depende del subsistema de control de concurrencia y puede ser de varios \textbf{niveles}: 0 (sin sobreescribir dirty reads), 1 (sin lost updates), 2 (sin lost updates ni dirty reads) o 3 (nivel 2 sin repeatable reads).
+    \item \textbf{Durability:} Los cambios aplicados a una BD por una transacción commiteada deben perdurar ante fallos. Depende del subsistema de recovery del DBMS.
+\end{itemize}
+
+\subsection*{Subsistema de manejo de transacciones}
+Este subsistema del DBMS se conforma de los siguientes módulos:
+\begin{itemize}
+    \item \textbf{Transaction manager (TM):} Encargado de preprocesar y ejecutar las transacciones en coordinación con el resto. Dentro de ellas, las operaciones tienen un orden fijo y pueden terminar en commit o abort.
+    \item \textbf{Scheduler (planificador):} Controla el orden de ejecución de las transacciones en base a una serie de reglas definidas según el paradigma.
+    \item \textbf{Recovery manager (RM o log manager):} Encargado de asegurar la durabilidad y atomicidad de las transacciones. Para ello interactúa con el \textbf{buffer manager} (BM) a través de las siguientes operaciones:
+    \begin{itemize}
+        \item \textbf{INPUT(X):} Copia el bloque de disco del ítem X a un buffer de memoria.
+        \item \textbf{READ(X, t):} Copia el contenido del ítem X del buffer de memoria a la variable temporal t en memoria local.
+        \item \textbf{WRITE(X, t):} Copia el valor de la variable local t al ítem X en un buffer de memoria.
+        \item \textbf{OUTPUT(X):} Copia el bloque conteniendo al ítem X del buffer de memoria a disco.
+        \item \textbf{FLUSH LOG:} Ordena al buffer manager escribir los registros del log a disco.
+    \end{itemize}
+    \item \textbf{Cache manager (CM):} Encargado de manejar las transferencias entre el disco y el almancenamiento no volatil. Entre sus operaciones tenemos:
+    \begin{itemize}
+    \item \textbf{Fetch(X):} Toma un slot vacío de la caché c, copia en este el valor del ítem X de disco, inicializa su dirty bit indicando que puede ser modificado con respecto a disco y actualiza el directorio de esta memoria para indicar que este slot es ahora ocupado por el ítem X.
+    \item \textbf{Flush(X):} Escribe el contenido del ítem X de caché a disco. Se puede efectuar automáticamente si al hacer Fetch(Y) no hay espacio para el ítem Y en caché.
+    \item Pin y Unpin
+    \end{itemize}
+\end{itemize}

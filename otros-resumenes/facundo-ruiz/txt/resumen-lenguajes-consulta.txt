@@ -1,0 +1,26 @@
+Lenguajes de consulta:
+Álgebra relacional (AR): Es un lenguaje formal especificado en base a propiedades matemáticas que en el modelo relacional le permite a los usuarios especificar consultas sobre instancias de relaciones, dando como resultado una nueva relación. Permite así formalizar las operaciones asociadas al modelo relacional, da una base para implementar y optimizar consultas en RDBMS y constituye los módulos internos de las principales operaciones y funciones de muchos sistemas relacionales.
+Es procedural y axiomático con operaciones unarias y binarias.
+
+Operaciones unarias:
+Select: Selecciona un subconjunto de tuplas de una relación en base a cierta condición. Genera una partición horizontal, es conmutativa, se puede agrupar en cascada y conserva la cantidad de atributos. En SQL se tiene:
+- SELECT * FROM Relacion WHERE Condicion
+Project: Selecciona un subconjunto de columnas de una relación. Genera una partición vertical, no es conmutativa y la cantidad de tuplas se preserva si la proyección contiene alguna superclave. En SQL se tiene:
+- SELECT DISTINCT Columnas FROM Relacion
+Rename: Le asigna un nuevo nombre a los atributos y/o a la relación. Suele usarse para resultados intermedios. En SQL se tiene:
+- SELECT NRelacion.Columna AS NColumna FROM Relacion AS NRelacion
+
+Operaciones binarias (entre R y S):
+Union/Intersection/Minus: Se corresponden respectivamente con las operaciones matemáticas de conjuntos v, ^ y \. Su relación resultante no contiene duplicados y requiere que R y S sean Union Compatible, es decir, que contengan la misma cantidad de atributos y en orden sus tipos de datos coincidan. La relación resultante contendrá los nombres de R.
+En SQL estas 3 operaciones se escriben como:
+- SELECT Columnas FROM R UNION/INTERSECT/MINUS SELECT Columnas FROM S (se puede agregar ALL para no eliminar duplicados)
+Producto Cartesiano: Crea una nueva relación que combina cada tupla de R con una de S. Su grado es la suma de los grados de sus relaciones y no requiere que las relaciones sean union compatibles. En SQL se tiene:
+- SELECT * FROM R CROSS JOIN S
+Join: Combina pares de tuplas relacionadas entre R y S en base a cierta condición. Esto no incluye a las tuplas NULL ni a las que no cumplan con la condición (que debe tener cierto formato para ser válida). Es conmutativa, su grado es la suma de los de sus relaciones y la cantidad de tuplas resultantes depende de la condición. Si la condición es de igualdad se denota EQUIJOIN. En SQL se usa con las cláusulas SELECT, FROM y WHERE.
+Natural Join: Similar a Join pero relacionando los campos del mismo nombre, dejando sólo uno de los duplicados. Para ello requiere de la correspondencia de nombres o que se haga un renombre previo.
+Outer Join: A diferencia de los anteriores clasificados como INNER JOIN, aquí se pueden incorporar al resultado las tuplas de R, S o ambas que no cumplan con la condición. Respectivamente son de tipo Left, Right y Full y los atributos restantes de la tupla en el resultado se rellenan con NULL. Estas operaciones son parte del estándar SQL2.
+Division: Retorna los valores de R emparejados con todos los valores de S, para lo cual requiere que los de S estén en los de R. El resultado contiene los atributos en R que no están en S. Si bien no suele implementarse en SQL puede expresarse en base a otras operaciones.
+
+CRT (Cálculo Relacional de Tuplas): Es otro lenguaje de consultas asociado al MR. Emplea una técnica declarativa de consultas (no describe un orden de evaluación) con fundamentos basados en la lógica matemática y forma las bases fundacionales de SQL. Se basa en la expresión:
+{t | COND(t)}
+donde t es una tupla y la única variable de la expresión, y COND es una fórmula bien formada de CRT. Como resultado se obtiene un conjunto de todas las tuplas de CRT que verifican la condición.

@@ -1,0 +1,82 @@
+\section*{Control de concurrencia}
+Los sistemas que implementan transacciones suelen requerir de respuesta rápida y alta disponibilidad por ser multiusuario con usuarios concurrentes. Algunos ejemplos son los sistemas de reserva de vuelos, transferencias bancarias, procesamiento de tarjetas de crédito y manejo de stock (otros ejemplos, sistemas de reserva de aerolíneas, cajeros electrónicos y supermercados). \\
+En la \textbf{multiprogramación} dos o más procesos se ejecutan concurrentemente y si no lo hacen de forma paralela su ejecución es \textbf{intercalada} en una CPU. Aquí hay que atender a una serie de posibles problemas (tomamos $T_1$ y $T_2$ transacciones con $T_1$ < $T_2$):
+\begin{itemize}
+    \item \textbf{Lost Update Problem:} $T_2$ lee el valor de un ítem $X$ previo a que $T_1$ lo modifique o lo sobreescribe.
+    \item \textbf{Temporary Update Problem (Dirty Read):} $T_2$ lee el valor de un item $X$ de una $T_1$ que fue abortada.
+    \item \textbf{Incorrect Summary Problem:} $T_2$ lee un item $X$ de $T_1$ antes de que haya terminado de actualizarse.
+    \item \textbf{Unrepeatable Read Problem:} $T_2$ lee el mismo item $X$ dos veces y entre ambas lecturas es modificado por $T_1$, dando lugar a diferentes valores.
+\end{itemize}
+
+\subsection*{Historia}
+Una \textbf{historia} (plan) determina la forma en que se ejecuta un conjunto de transacciones restringiendo que las operaciones sigan su orden si pertenecen a la misma transacción. De allí decimos que que dos operaciones entran \textbf{en conflicto} cuando son de transacciones diferentes, operan sobre el mismo ítem y al menos una es una escritura. (no pueden ejecutarse en simultáneo). \\
+Además, dadas dos transacciones $T_1$ y $T_2$ decimos que \textbf{$T_1$ lee $X$ de $T_2$} si $T_1$ escribe sobre $X$ y $T_2$ es la última transacción no abortada que había escrito sobre $X$.
+
+\subsubsection*{Definiciones}
+\begin{itemize}
+    \item \textbf{Equivalencia:} Dos historias son \textbf{equivalentes} si se definen en base al mismo conjunto de transacciones y el orden de las operaciones en conflicto de las transacciones no abortadas es el mismo.
+    \item \textbf{Seriabilidad (SR):} Una historia es \textbf{seriablizable} si es equivalente a una serial, lo cual permite satisfacer la propiedad de aislamiento. Podemos verificar si lo es a través de la construcción de un \textbf{grafo de precedencia} (SG(H)), donde cada nodo es una transacción y los arcos dirigidos de $T_i$ a $T_j$ se dan si hay operaciones en conflicto entre ellas y $T_i$ sucede antes que $T_j$. Si el grafo es acíclico, la historia es serializable.
+    \item \textbf{Recuperabilidad:} Según las restricciones impuestas, tenemos diferentes niveles:
+    \begin{itemize}
+    \item \textbf{Recuperable (RC):} Se da si para todo $T_i$, $T_j$ tales que $T_i$ lee de $T_j$ y $T_i$ hace commit entonces $c_i$ > $c_j$.
+    \item \textbf{Avoids Cascading Aborts (ACA):} Se da si toda transacción lee de aquellas que hayan hecho commit. De esa forma se pueden evitar los dirty reads sin abortar como en RC.
+    \item \textbf{Strict (ST):} Toda transacción lee o escribe en un ítem si la que anteriormente lo había escrito terminó (commit o abort).
+    \end{itemize}
+    En base a ello: Seriales $\subset$ ST $\subset$ ACA $\subset$ RC.    
+\end{itemize}
+
+\subsection*{Paradigmas de planificación}
+Atendiendo a los problemas anteriormente mencionados de un sistema concurrente, los schedulers pueden optar al recibir una operación por rechazarla, demorarla o procesarla. Aquellos que favorecen su procesamiento se denotan
+ \textbf{agresivos} (mayoría), y si no, \textbf{conservadores} (minoría). Cómo actúen depende de cómo traten a los data ítems: si los bloquean para su uso exclusivo siguen un \textbf{paradigma pesisimista}, mientras que si asumen un comportamiento serializable y actúan en caso de no suceder, \textbf{paradigma optimista}.
+
+\subsubsection*{Paradigma pesimista - Locking}
+Para saber si un ítem está disponible para ser usado podemos usar el concepto de \textbf{lock}, que se representa como una variable asociada a este. En su versión \textbf{binaria} un ítem está bloqueado o desbloqueado a través de las operaciones de lock y unlock. Luego, si una transacción desea operar sobre un ítem debe solicitar un lock sobre este y esperar a que se lo otorguen. Esto hace que sólo una transacción pueda operar sobre el ítem a la vez, incluso si se trata sólo de lecturas. \\
+Para salvar esta limitación se tiene el \textbf{shared lock (ternario)}, que permite que el lock sea \textbf{exclusivo} (write lock) o \textbf{compartido} (read lock), con sus respectivas operaciones. De ahí, si una transacción desea que pase de uno a otro deberá efectuar una operación de \quotes{upgrade}. \\
+Luego, una transacción puede leer un ítem $X$ si solicitó un lock sobre este y no lo ha liberado, y ninguna otra tiene un write lock a la vez. Para la escritura se requiere haber solicitado y no liberado un write lock y que ninguna otra lo tenga sobre $X$.
+
+\subsubsection*{Two Phase Locking (2PL)}
+Decimos que una transacción cumple con el mecanismo \textbf{2PL} si toda operación de lock precede a toda operación de unlock (fases de crecimiento y decrecimiento). Si en una historia legal todas sus transacciones lo cumplen podemos demostrar que la historia es \textbf{serializable} (el algoritmo es correcto). \\
+Decimos que una transacción es \textbf{2PL Estricta (2PLE)} si es 2PL y no libera ninguno de sus locks de escritura hasta después de hacer commit o abort. Esto garantiza que una historia sea \textbf{ST} pero no libre de deadlocks. Por otra parte, que sea \textbf{2PL Rigurosa (2PLR)} implica que tampoco los de lectura sean liberados antes.
+
+\subsubsection*{Deadlock}
+Es la situación en las historias en que en un grupo de transacciones cada una está esperando a que la otra libere un lock y no puede avanzar. Se pueden prevenir o evitar según la estrategia empleada:
+\begin{itemize}
+    \item Para \textbf{evitarlos} podemos detectar si existe a través de un \textbf{grafo de espera} (Wait For Graph, WFG(H)) donde para cada transacción en un nodo creamos un arco dirigido a otro si debe esperar a que se libere un lock de su transacción. Cuando su último lock de espera se libera, el arco también. Entonces, si el grafo es cíclico hay deadlocks. \\
+    De ahí se elige a una \textbf{transacción víctima} siguiendo algún criterio (tiempo de ejecución, variables actualizadas o por actualizar, ciclos en los que aparece, etc.) y se la aborta para reiniciarla posteriormente.
+    \item La otra opción es \textbf{prevenirlos} implementando \textbf{timestamps (TS)}, que se le asignan a cada transacción según el momento en que comienzan. Esto hace que si una transacción $T_i$ desea solicitar un lock sobre un item bloqueado por $T_j$ se tengan dos estrategias:
+    \begin{itemize}
+        \item \textbf{Wait-Die:} Si TS($T_i$) < TS($T_j$) se pone a $T_i$ en espera y si no se aborta a $T_i$ para reiniciarla más tarde con el mismo TS.
+        \item \textbf{Wound-Wait:} Si TS($T_i$) < TS($T_j$) se aborta a $T_j$ y si no se pone a $T_j$ en espera.
+    \end{itemize}
+    Otras estrategias involucran establecer un \textbf{tiempo de timeout} (su definición no es trivial), \textbf{No Waiting} (NW) o \textbf{Cautios Waiting} (CW). En la última, si $T_i$ solicita el lock de un ítem bloqueado por $T_j$ se tiene que: si $T_j$ no está bloqueada esperando a otra transacción, $T_i$ se bloquea, y si no se aborta.
+\end{itemize}
+
+\subsubsection*{Paradigma optimista - Algoritmo por control de timestamp}
+En este mecanismo no hay locking sino que el TM le asigna a cada operación un \textbf{timestamp} (TS, el mismo para las de una misma transacción). Luego para dos operaciones en conflicto se decide su orden según este número (se toma del reloj del sistema o un contador). \\
+Cada operación se procesa enviándose al data manager (DM) y se verifica con el planificador usando tres datos de cada item $X$: su máximo TS de escritura (\textbf{WT(X)}), su máximo TS de lectura (\textbf{RT(X)}) y su bit de commit (\textbf{C(X)}) que indica si la transacción más reciente que lo actualizó ya hizo commit. Con estos, el planificador asume al verificar una operación que el orden de los timestamps es el orden serial y que cada una pudo haber ocurrido si cada transacción se hubiese realizado instantáneamente en su TS. De no darse este comportamiento, la transacción es \textbf{físicamente irrealizable}.
+
+\subsubsection*{Reglas del planificador}
+Si la operación recibida es $r_T(X)$ y:
+\begin{itemize}
+    \item $TS(T) >= WT(X)$: Si C(X) es True se concede la solicitud y se actualiza RT(X) con el máximo entre TS(T) y RT(X). Si es False se demora $T$ hasta que C(X) sea True o $T$ aborte (previniendo \textbf{dirty read}).
+    \item $TS(T) < WT(X)$: La transacción es físicamente irrealizable (read too late).
+\end{itemize}
+Si en cambio recibe $w_T(X)$ y:
+\begin{itemize}
+    \item $TS(T) >= RT(X)$ y $TS(T) >= WT(X)$: Se escribe el nuevo valor de $X$, se actualiza WT(X) y C(X) $\leftarrow$ False.
+    \item $TS(T) >= RT(X)$ y $TS(T) < WT(X)$: Si C(X) es True se aplica la \textbf{Thomas Write Rule} y se ignora la operación de escritura para evitar la sobreescritura. Si es False, se demora T hasta que la transacción anterior termine.
+    \item $TS(T) < RT(X)$: La operación es físicamente irrealizable (\textbf{write too late}).
+\end{itemize}
+Si recibe $C(T)$, para cada ítem $X$ tal que $WT(X) = TS(T)$ se pone C(X) en True y se prosigue con las transacciones atrasadas por este evento. \\
+Finalmente, si recibe $Rollback(T)$ (R(T) o A(T)) cada transacción esperando por un ítem $X$ tal que $WT(X) = TS(T)$ se reinicia y verifica nuevamente. \\
+Para los casos en que la operación es físicamente irrealizable, se produce un rollback de la transacción con un nuevo TS. Nótese cómo este planificador evita el problema de \textbf{lost update} al abortar la lectura o ignorando la sobreescritura.
+
+\subsubsection*{Paradigma optimista - Control de concurrencia por multiversión}
+Este mecanismo se basa en atacar los problemas de \textbf{read too late} del algoritmo anterior al darle a cada transacción la versión vigente de los data items al momento de su inicio. Esto hace que se guarden tantas \textbf{versiones} como la más antigua vigente de las transacciones activas o commiteadas (no abortadas). \\
+Para esto, al ocurrir una escritura $w_T(X)$ (legal) se crea una nueva versión de $X$ como $X_t$ con $t = TS(T)$ en la base de datos. En una lectura $r_T(X)$ se busca $X_t$ tal que $t$ sea el máximo TS menor o igual a TS(T). Esto hace que WT(X) se interprete como el máximo $t$ para el que exista $X_t$. Para RT(X) se guarda un valor $tr$ para cada $Xt$ y si $w_{T'}(X)$ es tal que exsite $X_{t,tr}$ tal que $t < TS(T')$ y $tr > TS(T')$ (write too late) entonces se debe hacer rollback de la transacción. Además, se puede borrar $X_t$ si no existe transacción activa $T$ tal que $TS(T) < t$.
+
+\subsubsection*{Comparación entre los paradigmas}
+\begin{itemize}
+    \item \textbf{Similitudes:} En ambos puede haber \textbf{starvation} de una transacción y se tiene un \textbf{registro global} para manejar el control de concurrencia de las transacciones: en el pesimista son los locks y en el optimista una serie de timestamps de las operaciones con su bit de commit (agrupados en sets en el caso de implementar validación).
+    \item \textbf{Diferencias:} El optimista es mejor si la mayoría de las operaciones son de consulta (escritura) o raramente las transacciones decidan leer y actualizar el mismo elemento de la BD. Locking es más efectivo en situaciones de mayor conflicto. Por ende, los sistemas comerciales suelen establecer un \textbf{compromiso} según el tipo de transacción: si es read-only usan las versiones creadas por read-write; si es read-write usan locking creando versiones de los elementos.
+\end{itemize}

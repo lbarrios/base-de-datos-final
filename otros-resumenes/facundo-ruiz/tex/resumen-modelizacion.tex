@@ -1,0 +1,56 @@
+\section*{Modelización}
+Los pasos para diseñar una base de datos relacional son:
+\begin{center}
+    Requerimientos $\leftrightarrow$ MER $\leftrightarrow$ MR $\leftrightarrow$ Normalización $\leftrightarrow$ Diseño físico $\leftrightarrow$ BD
+\end{center}
+Se basan en la metodología de diseño lógico para bases de datos (LRDM). \\
+\textbf{MC (Modelo Conceptual):} Es una concpetualización formal del mundo real (dominio específico) que modela sus objetos, características y relaciones. Se usan para comunicar ideas, buscar concensos y tienen gran importancia a la hora de analizar aplicaciones y validar acciones de los usuarios. Se representan a través de lenguajes de ontologías, generalmente expresados a través de diagramas (DERs, UML).
+
+\subsection*{MER (Modelo Entidad-Relación)}
+Es una herramienta que permite realizar una abstracción o modelo de alguna situación de interés del mundo real. Se realiza a través de la técnica de los \textbf{DERs} (Diagramas de Entidad-Relación) conformados por varias partes.
+
+\subsubsection*{Entidades}
+Objeto o concepto del que queremos registrar información en un contexto dado. Se representan a través de bloques y conforman conjuntos de instancias. Pueden ser:
+\begin{itemize}
+    \item \textbf{Fuertes:} Su existencia no depende de la de otra entidad y se identifican a través de atributos propios.
+    \item \textbf{Débiles:} Necesitan de la identificación de otra entidad para distinguirse.
+\end{itemize}
+Además cuando tenemos varias que comparten atributos podemos generalizarlas de forma parcial o total, tratando a cada una como una \textbf{especialización}. Estas heredan atributos de la generalización y pueden ser disjuntas (con atributo discriminante) o solapadas.
+
+\subsubsection*{Atributos}
+Son las características descriptivas de las entidades relevantes al problema. Con ello constituyen la información concreta a mantener de cada elemento de una entidad. Tienen un respectivo dominio y pueden identificar a la instancia. Según cómo lo hagan tenemos:
+\begin{itemize}
+    \item \textbf{Superclaves (SK):} Conjunto de atributos que identifican unívocamente las instancias.
+    \item \textbf{Claves candidatas (CK):} SK minimales.
+    \item \textbf{Clave primaria (PK):} Una CK elegida según un criterio para identificar a la entidad.
+\end{itemize}
+Además pueden ser \textbf{multivaluados} (más de un valor a la vez) y \textbf{compuestos} (se dividen en sub-partes con significados diferentes), práctica que no suele emplearse en la realidad.
+
+\subsubsection*{Interrelaciones}
+Constituyen la manera de vincular entidades en el dominio del problema. Su \textbf{cardinalidad} determina la cantidad de instancias participantes de cada entidad (1-1, 1-N, N-M) y su \textbf{grado} la cantidad de entidades (unarias, binarias y ternarias). Cada extremo de la relación se corresponde con un \textbf{rol}. Además la \textbf{participación} de las entidades pueden ser total o parcial si no todas sus instancias deben formar parte de ella. Se almacenan como n-uplas ordenadas. \\
+Cuando se desea interrelacionar una relación N-M con una entidad se puede usar una \textbf{agregación} que abstrae a la primera como una entidad.
+
+\subsubsection*{Reglas de dominio}
+Son restricciones adicionales destinadas a expresar ciertas restricciones sobre los valores que no pueden expresarse de otra manera. Pueden expresarse con lenguajes formales o informales con tal de salvar la pérdida de información.
+
+\subsubsection*{Trampas de conexión}
+En caso de haber una mala interpretación de las interrelaciones que genere que se pierda información y no se tenga una representación adecuada del mundo real decimos que tenemos una \textbf{trampa de conexión}. Entre ellas tenemos:
+\begin{itemize}
+    \item \textbf{Trampa del abanico (Fan Traps):} El camino entre ciertas entidades es ambiguo. Sucede generalmente cuando salen dos o más interrealciones 1:N en abanico desde la misma entidad.
+    \item \textbf{Trampa del sumidero (Chasm Traps):} La interrelación existente entre dos entidades del modelo no tiene camino. Suele aparecer cuando una entidad participa parcialmente de dos o más relaciones.
+\end{itemize}
+Para solucionarlas suele reestructurarse el modelo.
+
+\subsubsection*{Otras consideraciones sobre DERs}
+\begin{itemize}
+    \item La cardinalidad de las interrelaciones ternarias se basa en ver la cantidad de elementos de una entidad que se relacionan con un par de las otras).
+    \item Las interrelaciones unarias deben tener al menos un extremo de participación parcial y tener sus roles definidos.
+    \item No suelen modelarse entidades de un sólo registro.
+    \item Las interrelaciones N-M pueden tener atributos identificatorios para tener mas de un vínculo entre instancias con distinto atributo (registro, historial).
+    \item Según el contexto pueden reemplazarse interrelaciones ternarias por pares de binarias o agregaciones.
+    \item Para evitar proliferación de roles en las especializaciones se puede tener una entidad aparte.
+\end{itemize}
+
+\subsection*{MR (Modelo Relacional)}
+Es la herramienta que nos permite expresar el \textbf{esquema lógico} de la base de datos. Se basa en un conjunto de \textbf{relaciones} que pueden pensarse como \textbf{tablas} con columnas y filas. Las columnas se corresponden con atributos y su conjunto conforma el esquema de la tabla, tomando el dominio de cada uno. Por otra parte las filas conforman las instancias en base a un conjunto de valores (registros). \\
+Cada entidad se verá representada por una relación y para representar las interrelaciones usamos el concepto de \textbf{clave foránea (FK)} que es un subconjunto de atributos claves de otra entidad. Además tenemos las \textbf{restricciones adicionales de referencia e integridad} para que las relaciones representen de manera consistente al esquema lógico.

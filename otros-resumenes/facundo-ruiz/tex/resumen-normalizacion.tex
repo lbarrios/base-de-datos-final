@@ -1,0 +1,55 @@
+\section*{Normalización}
+Al diseñar bases de datos la normalización surge como una técnica para tener una \textbf{medida de calidad} sobre sus esquemas (aunque pueda variar según el contexto de uso). Se toma en un nivel conceptual (significado de las relaciones) y uno implementativo (cómo se almacenan físicamente las tuplas). Primordialmente, busca \textbf{preservar la información} y \textbf{minimizar la información almacenada de forma redundante}.
+
+\subsection*{Pautas de diseño}
+La normalización engloba 4 pautas de diseño que pueden usarse como guía para el diseño sin necesariamente determinarlo (no siempre son independientes entre sí).
+\begin{itemize}
+    \item \textbf{Semántica:} Diseñar los esquemas de manera que sea intuitivo entender el significado de sus atributos para evitar confusiones y malos usos. Esto implica no combinar atributos de diversos tipos de entidades y relaciones en la misma relación.
+    \item \textbf{Almacenamiento:} Minimizar el espacio ocupado por el diseño evitando anomalías de actualización. Entre ellas tenemos:
+    \begin{itemize}
+        \item \textbf{Inserción:} La incorporación de una nueva instancia de una entidad está ligada a la existencia de otra o puede producir inconsistencias con datos anteriormente cargados en la relación.
+        \item \textbf{Deleción:} El borrado de una instancia produce que se pierda toda la información de otra.
+        \item \textbf{Modificación:} Modificar una instancia de una entidad puede volver sus datos inconsistentes entre sus apariciones en la relación.
+    \end{itemize}
+    Al permitir alguna de estas anomalías es preferente que estén debidamente indicadas para su correcta operación. Una razón por la que se suele violar esta pauta es la mejora en el \textbf{rendimiento} subyacente dado por el caso de uso (por la frecuencia de consultas y actualizaciones puede convenir tener un campo de más pero de rápido acceso).
+    \item \textbf{NULL:} Evitar la presencia de valores nulos en las relaciones debido a su variedad de interpretaciones posibles (valor no aplicable, desconocido, concido y ausente). Cuando sean inevitables deben ser la excepción.
+    \item \textbf{Tuplas espúreas:} No crear descomposiciones en las que al reconstruir la información usando juntas esta no se corresponda con la original. Esto suele deberse a que en la descomposición no se mantienen las claves de las entidades de la relación. Puede verificarse a través de consultas que usen ambas entidades.
+\end{itemize}
+
+\subsection*{Dependencias funcionales (DF)}
+Son herramientas formales utilizadas para analizar esquemas que ayudan a detectar algunos de los problemas mencionados. Se interpretan como \textbf{restricciones} entre conjuntos de atributos de una BD tales que los valores en uno dependen de los valores en el otro. Formalmente especifican una restricción sobre las posibles tuplas que pueden formar parte de una relación. \\
+Se especifican según la semántica de los atributos de la relación. Con ello, una \textbf{instancia legal} es aquella que las respeta (también llamada extensión o estado legal). Nótese que sólo con los datos no es posible determinarlas, aunque nos permiten confirmar su existencia o descartarlas.
+
+\subsection*{Proceso de normalización}
+Partiendo de las DF y las claves de cada relación de una base de datos, podemos aplicarle una serie de tests para ceritificar si satisface una \textbf{forma normal}. De no hacerlo, se le puede aplicar un \textbf{proceso de normalización} enfocado en minimizar la redundancia y las anomalías de inserción, deleción y modificación para que en una nueva descomposición la BD pase estos tests. Nótese que las formas normales no garantizan un buen diseño de la BD. \\
+Tras efectuar este proceso se buscan:
+\begin{itemize}
+    \item \textbf{Nonadditive Join (SPI):} Garantía de que no se producen tuplas espúreas, es decir, se puede recuperar la información original.
+    \item \textbf{Preservación de DF (SPDF):} Cada DF se encuentra representada en algún esquema resultante de la descomposición.
+\end{itemize}
+Lo primero se busca a cualquier costo, mientras que lo segundo es a veces sacrificado. \\
+Una DF $X \rightarrow Y$ es \textbf{completa} si al eliminar un atributo de $X$ la dependencia deja de existir. Es \textbf{parcial} si sigue existiendo. Por otra parte, la \textbf{cobertura minimal} $F_M$ de un conjunto de dependencias $F$ es tal que el lado derecho de cada dependencia tiene un sólo atributo y las dependencias son completas. Para formarla debemos descomponer los atributos a derecha, quitar los redundantes a izquierda y eliminar las DFs redundantes (no es conmutativo este proceso).
+
+\subsubsection*{Formas normales basadas en Clave Primaria}
+\begin{itemize}
+    \item \textbf{1FN:} No deben haber relaciones dentro de relaciones o como atributos dentro de las tuplas. Esto implica que el dominio de los atributos sólo puede ser de valores atómicos (o sea, no pueden ser \textbf{multivaluados}). Para alcanzar esta forma normal suele tomarse el atributo en una nueva relación que tenga como PK a ambos atributos. \\
+    Otras opciones involucran expandir la PK (introduciendo posible redundancia) o dividir el atributo en la cantidad de valores que puede tomar (derivando en posibles valores nulos). A través de la aplicación recursiva de 1FN se pueden sacar las \textbf{relaciones anidadas} de una relación.
+    \item \textbf{2FN:} Todos los atributos no primos deben depender completamente de la PK de la relación. Para pasar a 2FN basta con descomponer en subesquemas en los que aparezcan los atributos de la PK de los que dependen como parte de su clave.
+    \item \textbf{3FN:} Una DF $X \rightarrow Y$ es transitiva si tenemos un conjunto de atributos no primos $Z$ tal que $X \rightarrow Z$ y $Z \rightarrow Y$. Luego, en esta FN ningún atributo no primo debe depender transitivamente de la PK. Para satisfacerla garantizando SPI e SPDF tomamos la cobertura minimal $F_M$ de la relación, formamos los subesquemas $XA$ de cada DF $X \rightarrow A$, unimos los de igual lado izquierdo, agregamos uno con los atributos de una clave si ninguno de los resultantes contiene alguna y eliminamos los esquemas redundantes.
+    \item \textbf{BCFN (Boyce-Codd Normal Form):} Toda dependencia funcional no trivial $X \rightarrow A$ de la relación debe tener a $X$ como SK. Es más restrictiva que 3FN y al pasar a esta pueden perderse DFs ya que su proceso se basa en crear subesquemas reemplazando las DFs que violan esta FN.
+\end{itemize}
+
+\subsection*{Inferencia}
+Una DF es \textbf{inferida} por un conjunto de DFs si se cumple para toda instancia legal de la relación que cumpla con este cojunto. Con esto, la \textbf{clausura} $F^+$ de un conjunto de DFs $F$ son todas las dependencias funcionales que pueden ser inferidas a partir de este. A partir de esta podemos hallar una CK $X$ si $X \rightarrow A$ pertenece y para ningún subconjunto $Y$ de $X$, $Y \rightarrow A$ peretenece ($X$ entonces determina funcionalmente a todos los atributos de la relación).
+Podemos calcular $F^+$ aplicando las \textbf{reglas de inferencia} (o "axiomas de Armstrong"):
+\begin{itemize}
+    \item \textbf{RI1 (regla reflexiva):} Si $X$ contiene a $Y$ entonces $X \rightarrow Y$.
+    \item \textbf{RI2 (regla de incremento):} $X \rightarrow Y$ implica $XZ \rightarrow YZ$.
+    \item \textbf{RI3 (regla transitiva):} $X \rightarrow Y$ e $Y \rightarrow Z$ implican $X \rightarrow Z$.
+\end{itemize}
+Estas crean una clausura \textbf{fiable} (toda DF implicada a partir de $F$ es inferida) y \textbf{completa} ($F^+$ es determinada completamente a partir de $F$ aplicando estos axiomas). Entre sus corolarios tenemos:
+\begin{itemize}
+    \item \textbf{RI4 (regla de descomposición o proyección):} $X \rightarrow YZ$ implica $X \rightarrow Y$.
+    \item \textbf{RI5 (regla de unión o aditiva):} $X \rightarrow Y$ e $X \rightarrow Z$ implican $X \rightarrow YZ$.
+    \item \textbf{RI6 (regla pseudotransitiva):} $X \rightarrow Y$ e $WY \rightarrow Z$ implican $WX \rightarrow Z$.
+\end{itemize}

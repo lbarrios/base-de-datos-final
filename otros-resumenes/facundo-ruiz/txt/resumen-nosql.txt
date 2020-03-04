@@ -1,0 +1,88 @@
+NoSQL:
+Este tipo de bases de datos no relacionales fueron diseñadas teniendo en cuenta la existencia de datos no estructurados. Se caracterizan por ser distribuidas, de código abierto, y al no tener un esquema definido se basan en el concepto de clave/valor. Aquí almacenan los valores provistos para cada clave y los distribuyen a lo largo de la base.
+Ventajas:
+- Suelen tener una interfaz sencilla.
+- Permiten albergan grandes cantidades de datos con escalamiento horizontal (no tanto vertical).
+- Pueden recuperar su datos fácilmente gracias a su distribución.
+- Sus datos pueden ir evolucionando a través del tiempo y convivir con datos de diferentes estructuras.
+- Consultas que anteriormente eran complejas a través de juntas u otros operadores pueden responderse rápidamente.
+Desventajas:
+- No permiten realizar consultas muy complejas.
+- Su variedad de opciones dificulta saber la más adecuada para cada caso.
+- Carecen de operaciones de juntas, agrupamiento y ordenamiento.
+- Su soporte es limitado.
+- No tienen un lenguaje de consultas definido.
+- Su administración de transacciones tiene poca garantía.
+
+Propiedades BASE:
+Las BDs NoSQL cumplen con las propiedades de BASE que pueden interferir con las de ACID:
+- Basic Availability: El sistema debe garantizar disponibilidad en términos del teorema CAP incluso cuando ocurren fallas. Esto puede lograrlo a través de una base de datos altamente distribuida, en donde no se guarde una sola copia con tolerancia a fallas sino múltiples réplicas en discos. De esa forma, una falla que inhabilita el acceso a un grupo de datos no necesariamente lo hace a toda la BD.
+- Soft-state: El estado de la BD puede cambiar a lo largo del tiempo incluso sin intervención externa. Esto significa que en un momento dado no necesariamente habrá una única "versión" de cada dato y la consistencia debe ser manejada por los desarrolladores, no el DBMS.
+- Eventual consistency: El sistema podrá ser consistente a lo largo del tiempo si sus datos convergen a un único estado en algún momento, aunque no hay garantías de que eso ocurra.
+
+Teorema CAP:
+Publicado en 1998 y presentrado por Eric Brewen en el año 2000, establece que cualquier sistema que comparta datos a través de la red puede tener a lo dos de las siguientes propiedades:
+- Consistencia, es decir, un único valor para todos datos.
+- Alta disponibilidad para actualizar y acceder a los datos.
+- Tolerancia a las particiones de la red.
+Según Brewen, el objetivo del teorema debe enfocarse en encontrar el balance entre consistencia y disponbilidad mientras se encuentra la forma de manejar las particiones de la red, considerando cómo recuperarse ante eventuales fallas. Para lo segundo, el sistema debe detectar la partición, entrar en modo "particionado" y luego recuperar el modo anterior.
+
+Herramientas y operaciones:
+- MapReduce: Es un marco de trabajo que permite procesar paralelamente grandes volúmenes de datos en varios equipos. Parte de la operación Map que toma los datos de la BD y los transforma en una colección de operaciones que se pueden ejecutar independientemente en diferentes procesadores. A la salida retorna pares <clave, valor> a los que Reduce les aplica la operación asignada y retorna su resultado.
+- Sharding: Se basa en particionar a los datos de la BD en fragmentos (shards) que se distribuyen a través de servidores. Estos comparten esquema haciendo que su unión represente la totalidad del dataset. Nótese que esta fragmentación no es trivial y suele hacerse en base al hash de alguno de sus aributos.
+Ventajas:
+-- Permiten salvar la imposibilidad de guardar todos los datos en la misma máquina.
+-- Escalan horizontalmente.
+-- Brinda tolerancia ante fallas, ya que sólo una porción de los datos queda fuera de servicio.
+Desventajas: Ante frecuentes consultas que involucren más de un nodo el rendimiento decrece.
+- Replicas: Es el almacenamiento de múltiples copias de la base de datos en diferentes nodos de la red. Puede combinarse con sharding para tener escalabilidad y dispnbilidad. Se puede implementar en modo Master-Slave o P2P (Peer to Peer).
+-- Master-Slave: Aquí se designa un nodo como master y sobre este se efectúan las operaciones de actualización (insert, delete, update), mientras que el resto (slaves) se usan para las lecturas (cada tanto se actualizan).
+Ventajas:
+--- Son ideales para escenarios de muchas lecturas.
+--- En caso de fallar el nodo master, las lecturas pueden continuar en los slaves y se los puede configurar para que lo reemplacen
+Desventajas:
+--- El nodo master puede representar un cuello de botella para las escrituras.
+--- Las lecturas pueden ser inconsistentes según la frecuencia en que se actualice cada réplica. Para ello puede implementarse un sistema en el que un valor se considere consistente al estar en la mayoría de los nodos, pero este requiere de una comunicación más rápida y confiable entre ellos.
+-- Peer to Peer (P2P): Aquí todos los nodos (peers) poseen el mismo nivel de jerarquía y pueden manejar tanto lecturas como escrituras.
+Ventajas:
+--- Evitan los cuellos de botella al tener un sistema descentralizado y tienen mayor tolerancia a las fallas.
+--- El rendimiento es potencialmente mayor ya que todos los nodos son capaces de responder a las peticiones.
+Desventajas: Las lecturas pueden ser inconsistentes y las escrituras, conflictivas. Tenemos dos posibles estrategias para tratar estos problemas:
+--- Concurrencia pesimista: Uso de locks que asegura la consistencia y previene conflictos pero va en contra de la disponibilidad.
+--- Concurrencia optimista: Sin usar locks da lugar a inconstencias basándose en la propagación de los valores hasta llegar a un estado consistente. Pueden asegurar la consistencia al combinarse con un sistema de votación parecido a master-slave.
+
+Tipos de bases NoSQL:
+Key-value pair databases: Es la más sencilla ya que guarda cada ítem como una clave asociada a un valor (como un diccionario). Las claves deben ser únicas dentro del dominio manejado para identificar al ítem unívocamente (para esto se pueden tener namespaces y/o buckets).
+Los datos guardados constituyen su información y no tienen un esquema definido, por lo que tienen restricciones en cuanto a tamaño ni tipo: texto plano, XML, JSON, imagen, etc. Esto no salva que pueda haber datos redundantes y no hay integridad referencial.
+Ventajas:
+- Su escalabilidad hace que se adecúen a la nube, a través de servicios en la web y aplicaciones móviles, ya que no es necesario consultar todas sus entradas para obtener un valor.
+- Permiten almacenar objetos variados al asociarlos a claves. Esto los hace útiles para el código orientado a objetos.
+Desventajas: 
+- La integridad de los datos y sus restricciones deben ser manejadas por los programadores.
+- La falta de estructura limita el análisis posible que pueda efectuarse sobre los datos.
+- Su enfoque en la escalabilidad limita su funcionalidad y complejidad.
+
+Document databases: Se asemejan a las anteriores pero guardan sus datos en base a documentos (strings o representaciones binarias de strings). Estos pueden diferir en su estructura (semi-estrcuturados, JSON, XML) y pueden contener listas de atributos e incluso documentos embebidos. Entre sus datos pueden contener metadata con índices para referirse a sus campos.
+Suelen manejarse a través de motores de DB como MongoDB. Este tiene escala horizontal gracias al sharding y replicas. Además en su API tiene incorporadas las funcionalidades de MapReduce para procesamiento batch y las de agregaciones. Permite además implementar búsquedas ad-hoc por campos y rangos particulares. Otros motores incluyen RavenDB, RethinkDB y CouchDB.
+Ventajas:
+- Los documentos pueden representar flexiblemente entidades, ya que no requieren la definición de sus atributos previamente.
+- Su información es accesible a través de lenguajes de consultas y APIs dedicados, a diferencia de key-value donde es necesario acceder a la clave previamente.
+- La incrustación de documentos evita implementar juntas en las consultas, mejorando el rendimiento. Esta pueden especificarse a través de los diagramas de interrelación de documentos (DID).
+Desventajas: La flexibilidad de la información puede acomplejizar la interpretación de los datos a través del programa.
+
+Column family databases: Almacenan sus datos en columnas que asocian un nombre con un valor. Estas se agrupan en filas pero las que suelen accederse simultáneamente en las consultas se agrupan en familias (column families). No requieren predefinir un esquema para agregar columnas nuevas. Además, tienen mecanismos naturales de partición vertical y su almacenamiento es multi-dimensional (mapas o vectores asociativos).
+Superficialmente se asemejan a las bases de datos relacionales, pero con algunas diferencias:
+- No implementan juntas ya que su set de columnas no está predefinido.
+- Suelen estar denormalizadas de manera de poder guardar en una fila toda la información relacionada con una entidad particular.
+Ventajas:
+- Permite replicar y distribuir sus datos fácilmente en múltiples nodos de la red.
+- Tienen un modelo de fácil acceso a través de lenguajes de consulta parecidos a SQL.
+- Las column families favorecen el rendimiento de las consultas de agrupamiento (máximo, mínimo, promedio, etc.).
+- Su escalabilidad ser ve favorecida al permitir que no todas las columnas tengan valores asociados.
+- Pueden usar timestamps para almacenar diferentes versiones de un valor en el tiempo.
+
+Graph databases: Estas almacenan sus datos como nodos conectados a través de relaciones dirigidas. Ambas estructuras pueden contener información compleja. SQL Server y Oracle basan su funcionalidad basada en ellas.
+Ventajas:
+- Permiten almacenar relaciones y manejarlas eficientemente al pensar a cada nodo como una entidad.
+- Se adecúan a los problemas enfocados en relaciones y basados en grafos (redes sociales, conexiones, recorridos, etc.) que en las bases relacionales tendrían el costo de muchas juntas y consultas.
+Desventajas: No son fáciles de escalar ya que su particionamiento puede afectar el rendimiento de las consultas.

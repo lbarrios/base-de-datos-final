@@ -1,0 +1,56 @@
+\section*{Introducción}
+
+\subsection*{Definiciones}
+\begin{itemize}
+    \item \textbf{Base de datos:} Es un conjunto de datos relacionados con un \textbf{significado inherente}. Esto hace que no consideremos a un conjunto de datos aleatorios como una, ya que se diseña y contruye con un propósito específico. \\
+    Surgieron en la década del '70 debido a las crecientes necesidades de almacenar ya acceder a mayores cantidades de datos de forma eficiente. Suelen estar manejadas por un \textbf{DBMS} (Database Management System).
+    \item \textbf{Dato:} Es un hecho conocido que puede ser registrado y tiene un significado implícito. Suele ser más volatil que la estructura en que está definido.
+    \item \textbf{DML (Data Manipulation Language):} Es el usado en los DBMS para modificar las instancias: obtener, agregar, cambiar, etc. Algunas de sus funciones en SQL son SELECT, INSERT, DELETE de SQL.
+    \item \textbf{DDL (Data Definition Language):} Se usa en los DBMS para alterar el esquema de la base: crear, agregar atributo, renombrar. Algunas de sus funciones en SQL son CREATE, ALTER, DROP, RENAME.
+\end{itemize}
+
+\subsection*{DBMS}
+Es la herramienta que utiliza cada aplicación para manejar grandes cantidades de datos de manera eficiente. Suele ser configurada por los \textbf{administradores de bases de datos}.
+Entre sus funciones tenemos:
+\begin{enumerate}
+    \item Permitirle a los usuarios crear nuevas bases de datos y especificar sus esquemas.
+    \item Perimitirle a los usuarios realizar consultas a los datos y modificarlos.
+    \item Almacenar grandes cantidades de datos por un período largo de tiempo para perimitir consultas y modificaciones eficientes.
+    \item Garantizar la durabilidad de los datos al tener un sistema de recuperación en caso de fallas, errores o mal uso intencional. Este también se encarga de las copias de seguridad.
+    \item Controlar el acceso concurrente a los datos por parte de los usuarios, de manera de evitar interacciones inesperadas y garantizar que las acciones realizadas sean seguras y completas.
+\end{enumerate}
+Otros componentes de la DBMS incluyen:
+\begin{itemize}
+    \item \textbf{Recovery Manager:} Encargado de restaurar la base de datos a un estado consistente en caso de haber una falla. Para hacer eso hace uso del \textbf{log}, un archivo que lleva un registro de las acciones efectuadas a la base de datos.
+    \item \textbf{Optimizador de consultas:} encargado de armar un plan de ejecución eficiente en base a una consulta. Para ello hace uso del \textbf{system catalog}.
+\end{itemize}
+
+\subsection*{System catalog}
+Es el lugar de un \textbf{RDBMS} (Relational DBMS) en que se guardan los metadatos del esquema. Estos comprenden:
+\begin{itemize}
+    \item Información sobre tablas y columnas. Esto comprende datos estadísticos como el tamaño de los archivos y el factor de bloqueo, la cantidad de tuplas de la relación, la cantidad de bloques de la relación y el rango de valores de una columna.
+    \item Vistas, interpretadas como consultas que pueden guardarse para referenciarse nuevamente.
+    \item Índices, utilizados para optimizar las consultas.
+    \item Usuarios y grupos de usuarios, para controlar los accesos.
+    \item Triggers, para actualizar automáticamente ciertos datos en respuesta a eventos o acciones.
+    \item Funciones de agregación definidas por el usuario.
+\end{itemize}
+Entre sus principales usos tenemos:
+\begin{enumerate}[label=\roman*]
+    \item Obtener el esquema de una tabla al verificar una consulta.
+    \item Obtener la selectividad esperada de un atributo al optimizar una consulta.
+    \item Obtener los permisos de un usuario al verificar un acceso.
+\end{enumerate}
+
+\subsection*{Arquitectura e independencia}
+En una base de datos tenemos 3 \textbf{niveles}:
+\begin{itemize}
+    \item \textbf{Interno:} Es el que describe el almacenamiento físico de las estructuras de la base de datos.
+    \item \textbf{Conceptual (o lógico):} Es el que contiene el esquema conceptual que describe la estructura de la base de datos sin enfocarse en lo físico sino en entidades, tipos de datos, operaciones de usuarios y restricciones.
+    \item \textbf{Externo (o de usuario):} Contiene los esquemas o vistas de usuarios en los que se describe la parte de la base de datos que le interese a un grupo en particular.
+\end{itemize}
+Entre ellos podemos tener las siguientes \textbf{independencias}:
+\begin{itemize}
+    \item \textbf{Lógica:} Capacidad de poder cambiar el esquema conceptual sin cambiar los externos, ya sea para expandir o reducir la base de datos  (agregar o quitar un nuevo tipo de registro), cambiar las restricciones, etc. No suele ser fácil de lograr.
+    \item \textbf{Física:} Capacidad de poder cambiar el esquema interno sin cambiar el concpetual (y por ende el externo). Esto involucra cambiar la organización de los archivos o agregar algún índice para las consultas.
+\end{itemize}
