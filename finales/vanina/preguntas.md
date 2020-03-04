@@ -1,5 +1,3 @@
-- Definir transacciones y dar y explicar las propiedades ACID.
-
 - Dada la siguiente relación (idEstudiante, nombreEstudiante, nroCurso, idProfesor). En base a su conocimiento del dominio, detalle cuales son las dependencias funcionales en ese esquema. ¿Está en 3FN? Justifique. En caso de no estarlo dar una descomposición que sea 3FN.
 
 - Defina bases de datos distribuida. Qué nuevos niveles de transparencia aparecen junto a estas bases?
@@ -18,8 +16,6 @@
 
 - ¿Qué es gobierno de datos? Diferencias entre datos, información y conocimiento.
 
-- ¿Qué es una transacción? Describir las propiedades ACID.
-
 - Defina bases de datos distribuida. ¿Qué nuevos niveles de transparencia aparecen junto a estas bases?
 
 - ¿Qué es Data Mining? Describir las distintas técnicas.
@@ -35,7 +31,6 @@
         1. Escribir la query en AR
         2. Dar dos estrategias de ejecución para esa query junto con la cantidad de datos que deben transmitirse en cada caso. ¿Cuál es la mejor en términos de transferencia de datos?
 
-- Definir transacciones y dar y explicar las propiedades ACID.
 
 - Tenías tres relaciones y había que dar según conocimiento del dominio las dependencias funcionales y decir en qué FN estaba (idMascota, nombreMascota, nombreDuenio), (idMascota, idDiagnostico, fecha), (idDiagnostico, descripcion, medicamento). (No había una única respuesta).
 
@@ -54,8 +49,6 @@
     2. Dar dos estrategias de resolución de esta query, indicando cuantos bytes se transfieren por la red entre las maquinas. Por ejemplo “N1 y N2 mandan todo a N3”
 
 - Definir dependencia funcional. Dado {idAlumno, nombreAlumno, idCurso, idProfesor} dar un conjunto de dependencias funcionales. Decir en qué forma normal se encuentra.
-
-- Qué es una transacción? Dar un ejemplo de algún dominio. Por qué es importante el control de concurrencia?
 
 - Explicar bases NoSQL por documentos, explicando el concepto de documento. Qué es un DID? Dar un ejemplo de un sistema de base de datos por documentos.
 Definir base de datos distribuida. Explicar nuevos niveles de transparencia.
