@@ -1,7 +1,5 @@
 - Definir transacciones y dar y explicar las propiedades ACID.
 
-- Definir dependencia funcional. ¿Para qué sirve que la normalización? ¿Cómo esta relacionado con la calidad de un diseño de bases de datos? ¿Qué problemas puede presentar una base desnormalizada? Ejemplifique
-
 - Dada la siguiente relación (idEstudiante, nombreEstudiante, nroCurso, idProfesor). En base a su conocimiento del dominio, detalle cuales son las dependencias funcionales en ese esquema. ¿Está en 3FN? Justifique. En caso de no estarlo dar una descomposición que sea 3FN.
 
 - Defina bases de datos distribuida. Qué nuevos niveles de transparencia aparecen junto a estas bases?
