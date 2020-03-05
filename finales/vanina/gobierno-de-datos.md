@@ -23,3 +23,11 @@ Los datos son un conjunto de valores crudos, sin mucho significado. Por ejemplo,
 La información son datos procesados, agregándole metadatos que le dan significado, utilidad, contexto. Siguiendo el ejemplo anterior, no es lo mismo el dato 23, que decir la temperatura 23 grados, la fecha 05/03/2020, la Ciudad de Buenos Aires, lo cual sería información.
 
 El conocimiento surge como derivado del procesamiento de la información mediante la relación, la búsqueda de patrones, la predicción de nueva información, etcétera. Por lo general el conocimiento permite generar nueva información (o datos) a partir de la información preexistente. Representa un entendimiento superior de la información en su conjunto. Siguiendo el ejemplo anterior, el procesamiento de la información del climática en una ciudad durante mucho tiempo puede dar lugar a predicciones meteorológicas o a un entendimiento diferenciado del tema (ejemplo: separación en estaciones del año).
+
+## - Diferencia entre administrador de datos y DBA. Relacionar con concepto de independencia física y transparencia.
+
+El administrador de datos trabaja con el modelo conceptual y lógico, es un perfil netamente funcional. Es un especialista en los datos de una organización desde el punto de vista lógico, con funciones como la colección y análisis de requerimientos para el modelado de negocio, la definición y el cumplimiento de standards. El administrador de datos suele desentenderse de la organización física de los datos.
+
+El DBA trabaja con el modelo físico, es un especialista en el motor de base de datos. Esta persona es quien conoce los detalles de un motor de base de datos, y es asistido por el administrador de datos en la creación de los modelos físicos a partir de los modelos lógicos.
+
+Esto está fuertemente relacionado con el concepto de independencia física y transparencia, ya que si bien trabajan en colaboración el administrador de datos puede abstraerse de los aspectos físicos de la base y trabajar con los aspectos lógicos gracias a la transparencia física; asímismo el DBA puede desentenderse de los aspectos lógicos y realizar cambios u optimizaciones en el modelo físico. Todo esto, en la medida de que el nivel de independencia lo permita.

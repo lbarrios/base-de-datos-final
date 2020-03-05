@@ -13,3 +13,6 @@ Replicación: el usuario desconoce la existencia de copias de los datos, cualqui
 Diseño: el usuario no debería tener conocimiento sobre cómo está diseñada la base distribuída (cantidad o composición de nodos, esquema global, etcétera)
 
 Ejecución: el usuario debería poder realizar una ejecución sin tener que conocer cómo o dónde se va a ejecutar la misma.
+
+
+## - ¿Qué es fragmentación mixta? Dar un ejemplo, con una query en álgebra relacional para reconstruir las tablas originales

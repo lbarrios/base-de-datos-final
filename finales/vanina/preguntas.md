@@ -11,10 +11,6 @@
     3. Indicar en algebra relacional como sería la query que reconstruya las tablas originales
 
 
-- ¿Qué es Data Mining? Describir las distintas técnicas.
-
-- ¿Qué es la interoperabilidad de datos? Describir los dos enfoques que se mencionan en la bibliografía.
-
 - Se tienen los siguientes esquemas:
     E = {IDEstudiante, nombreEstudiante, IDDepartamento, fechaInscripción}
     D = {IDDepartamento, nombreDepartamento, Facultad}
@@ -31,12 +27,6 @@
 
 - Dar dos propiedades del álgebra relacional que se puedan usar para optimizar consultas y ejemplificar.
 
-- Defina bases de datos distribuida. ¿Qué nuevos niveles de transparencia aparecen junto a estas bases?
-
-- ¿Qué es fragmentación mixta? Dar un ejemplo, con una query en álgebra relacional para reconstruir las tablas originales
-
-- ¿Cuáles son las dos formas de interrelación de datos? (creo que era integración e intercambio).
-
 - Tenias dos tablas: Estudiantes E: (idEstudiante, nombreEstudiante, idUniversidad, fechaNac), Facultad F: (idFacultad, nombreFacultad). Un estudiante va a 1 y solo 1 facultad. La tabla Estudiantes tiene 10000 registros de 30 bytes cada uno. La tabla universidad tiene 100 registros de 20 bytes cada uno. Suponga una base de datos distribuida de 3 nodos N1, N2 y N3 donde N1 tiene la tabla estudiantes, N2 tiene la tabla facultades y N3 no tiene nada.
     1. Expresar en álgebra relacional la consulta: “devolver id de estudiante y nombre de la facultad para los estudiantes que hayan nacido despues de 1980” (universidad y facultad es lo mismo acá, es sólo para que haya que ponerle condición al join)
     2. Dar dos estrategias de resolución de esta query, indicando cuantos bytes se transfieren por la red entre las maquinas. Por ejemplo “N1 y N2 mandan todo a N3”
@@ -47,8 +37,10 @@
 Definir base de datos distribuida. Explicar nuevos niveles de transparencia.
 Explicar fragmentación. Explicar cómo se recupera la tabla original con álgebra relacional.
 
-- Explicar independencia física.
-
 - Dar dos ejemplos de optimizaciones algebraicas. Ejemplificar.
 
-- Diferencia entre administrador de datos y DBA. Relacionar con concepto de independencia física y transparencia.
+
+
+## - Explicar independencia física.
+
+La independencia física es la capacidad de poder cambiar el esquema interno sin tener que cambiar el esquema conceptual (y por lo tanto tampoco los esquemas externos). Algunos potenciales cambios al esquema interno podrían ser la organización de los archivos o el agregado de un índice, usualmente con el fin de mejorar el rendimiento de las operaciones de consulta o de actualización de datos.
