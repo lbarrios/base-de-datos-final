@@ -196,3 +196,142 @@ Responsable de mantener consistencia entre copias
     - Si T actualiza información en varios sitios, no puede terminar el COMMIT hasta asegurarse de que los efectos de T no se van a perder en **ningún sitio** (grabación de log)
     - Es frecuente usar 2PC para asegurar correctitud de commit distribuído
 
+## Transacciones
+
+### Propiedades ACID
+Propiedades que debe cumplir una transacción.
+
+- **Atomicidad**: O bien todas las operaciones son aplicadas apropiadamente en la base de datos, o bien ninguna lo es. 
+- **Consistencia** (integridad): La ejecución de una transacción preserva la consistencia de una base de datos.
+- **Isolación** (aislamiento): Una transacción no puede afectar a otra. Cada transacción es independiente de otras transacciones ejecutándose concurrentemente en el sistema.
+- **Durabilidad** (persistencia): Los cambios son correctamente persistidos una vez que la transacción termina, y no se podrá deshacer incluso ante una falla del sistema.
+
+
+## 2PC
+- Problema: protocolo de bloqueo. Si falla el coordinador una vez pedido el lock, bloquea a todos los nodos participantes.
+
+### 3PC
+Divide segunda fase de commit en dos subfases.
+
+1. Prepare to commit
+    * Comunica resultado de la fase de votación a todos los participantes
+    * El commit se debe preparar en esta fase
+    * Si todos los participantes votan afirmativamente, pide que pasen a prepare-to-commit
+2. Commit
+    * Idéntico a commit en 2PC
+    * Si el coordinador cae durante esta subfase, otro participante puede tomar asumir la coordinación del commit.
+    * Se limita el tiempo requerido por T para realizar el commit, ya que se preparó en la fase anterior, por lo que solo debe ser aplicado. Esto asegura liberar los locks luego de un determinado tiempo.
+
+- Tiene algunas desventajas, principalmente el overhead para asegurarse de que no hayan inconsistencias, por lo que no ampliamente muy usado debido a problemas de red (muchos nodos fallando a la vez).
+
+## Queries distribuídos
+
+1. Mapeo: se mapea la consulta SQL a una consulta de AR sobre las relaciones globales, referenciando al esquema global.
+    - NO se utiliza la información de distribución y replicación.
+    - El mapeo es idéntico al de las BD centralizadas: normalización, análisis de errores, simplificación, reestructuración.
+2. Localización: se mapea el resultado anterior a múltiples consultas sobre fragmentos individuales.
+    - Se utiliza la información de distribución y replicación.
+3. Optimización global: se selecciona una estrategia de una lista de candidatos cercanos al óptimo.
+    - Tiempo es la unidad más utilizada para medir costo
+    - Costo total es ponderado entre CPU, I/O, comunicación/red.
+    - Costo de comunicación/red suele ser muy significativo.
+4. Optimización local: similar a las BD centralizadas, se optimiza cada query localmente. 
+
+### Queries - Costos
+
+- Problema: alto costo de transferencia sobre la red
+- Solución: los algoritmos de optimización deben considerar reducir la cantidad de datos a transferir.
+
+### Queries - Semijoin
+Reducir cantidad de tuplas de una relación **antes** de que sean transferidas a otro nodo.
+
+- Implementación:
+    1. enviar sólo columna de JOIN
+    2. realizar JOIN
+    3. del resultado retornar columna de join + atributos necesarios
+    4. completar consulta
+
+- Ventaja: si solo una pequeña fracción de la relación participa en el JOIN, reduce mucho la transferencia de datos.
+
+## Tipos de DDB
+
+- Definición: Datos y sotware distribuídos en múltiples lugares, pero conectados a través de una red.
+
+- Grado de homogeneidad: 
+    + Homogéneo: si todos los servers y usuario utilizan el mismo software
+    + Heterogéneo: si usan distinto software
+        * Es necesario un lenguaje canónico y un traductor que haga de intermediario al lenguaje de cada uno de los servers.
+- Grado de autonomía local:
+    + Si se le permite al sitio funcionar como DBMS standalone o no
+        * (ver arriba: autonomía de diseño, comunicación y ejecución).
+    + Ejemplo: FDBS y p2pDBS: cada server es un DBMS independiente y autónomo que tiene sus propios usuarios, transacciones, DBA, y por lo tanto alto grado de autonomía.
+        * p2pBS: no hay esquema global, se construye a medida que se requiere
+        * FDBS: existe un esquema global federado
+
+### Federated Databases - Heterogeneidad
+
+- Origen
+    + Diferencias en modelo de datos: DBs pueden venir de distintos modelos. 
+        * Se requiere un mecanismo que procese las queries y relacione la información basado en metadata.
+    + Diferencias en restricciones: varían de sistema en sistema.
+        * Se debe lidiar con conflictos en restricciones (integridad, triggers, etc).
+    + Diferencias en lenguajes: incluso dentro del mismo modelo, los lenguajes poseen varias versiones.
+        * Ejemplo: SQL-89, SQL-92, SQL-99, SQL-2008.
+
+- Heterogeneidad semántica: ocurre cuando existen diferencias en el significado, interpretación y uso de los datos.
+    + Las DBS tienen autonomía de diseño y pueden tomar decisiones.
+
+- Solución actual: utilizar software responsable de administrar queries y transacciones desde la aplicación global hacia las DBs individuales (pudiendo incorporar reglas de negocio).
+    + Middleware
+    + Application servers
+    + Enterprise Resource Planning (ERP)
+    + Modelos y herramintas para Data Integration y Data Exchange: para hacer integración y mapeo en un lenguaje de alto nivel.
+    + Ontology-based Data Access/Query: modelo de más alto nivel que el relacional.
+        * El acceso a los datos se hace mediante un lenguaje ontológico de fácil acceso para el usuario (sin entendimiento de BBDD).
+
+### Federated Databases - Autonomía
+- Comunicación: capacidad de decidir cuándo comunicarse con otras DBs
+- Ejecución: capacidad para ejecutar operaciones locales sin interferir en operaciones externas, y también capacidad de decidir el orden
+- Asociación: capacidad de decidir si compartir y cuánto compartir
+    + Funcionalidad: operaciones que soporta
+    + Recursos: datos que gestiona
+
+## Arquitecturas Paralelas vs Distribuídas
+- Prevalencia en industria: ambas
+    + Paralela común en HPC
+    + Distribuída común en grandes empresas
+- Arquitecturas de sistema multiprocesador: se desarrollan Parallel Database Management Systems (PDBMS)
+    + Red: no requieren compartir red
+    + Memoria compartida: comparten memoria y disco
+    + Disco compartido: comparten disco, pero cada uno tiene memoria propia
+    + Shared-nothing: cada procesador posee su propia memoria y su propio disco
+
+## Catálogo distribuído
+El catálogo es una BD en sí misma
+
+- Contiene metadata acerca del DDBMS
+- Administración
+    + Autonomía
+    + Vistas
+    + Distribución y replicación de datos
+- Esquemas de administración
+    + Centralizado: el catálogo completo se almacena en un único sitio
+        * Ventaja: simple de implementar
+        * Desventajas:
+            - Poca confiabilidad
+            - Poca disponiilidad
+            - Poca autonomía de los nodos
+            - Poca distribución de la carga de procesamiento
+            - Los locks generan cuellos de botella cuando hay escrituras intensivas
+    + Totalmente replicado: cada sitio almacena una copia del catálogo completo
+        * Ventaja: lecturas pueden responderse localmente
+        * Desventajas:
+            - Overhead: actualizaciones deben ser transmitidas a todos los nodos
+            - Esquema centralizado de 2PC para mantener consistencia del catálogo
+            - Aplicaciones escritura-intensivas (con locks) pueden incrementar el tráfico de la red
+    + Parcialmente replicado: cada sitio mantiene información completa del catálogo de los datos locales
+        * Cada sitio permite almacenar en caché entradas obtenidas de otros sitios
+            - Entradas en cache no garantiza información actualizada
+        * Cada sistema lleva registro de las entradas del catálogo para los sitios donde se creó el objeto, y para los sitios que tienen copias del objeto
+            - Cualquier cambio debe ser propagado al sitio original (de creación).
+- 
