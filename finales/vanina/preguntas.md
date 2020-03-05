@@ -1,7 +1,5 @@
 - Dada la siguiente relación (idEstudiante, nombreEstudiante, nroCurso, idProfesor). En base a su conocimiento del dominio, detalle cuales son las dependencias funcionales en ese esquema. ¿Está en 3FN? Justifique. En caso de no estarlo dar una descomposición que sea 3FN.
 
-- Defina bases de datos distribuida. Qué nuevos niveles de transparencia aparecen junto a estas bases?
-
 - No me acuerdo exactamente el enunciado, pero era asi: Tenias dos tablas: Estudiantes E: (idEstudiante, nombreEstudiante, idFacultad, fechaNac), Facultad F: (idFacultad, nombreFacultad, region). Un estudiante va a 1 y solo 1 facultad. La tabla Estudiantes tiene 10000 registros de 30 bytes cada uno. La tabla universidad tiene 100 regitros de 20 bytes cada uno. Suponga una base de datos distribuida de 3 nodos N1, N2 y N3 donde N1 tiene la tabla estudiantes, N2 tiene la tabla universidades y N3 no tiene nada.
     1. Expresar en álgebra relacional la consulta: “devolver id de estudiante y nombre de la facultad para los estudiantes que hayan nacido despues de 1980”
     2. Dar dos estrategias de resolución de esta query, indicando cuantos bytes se transfieren por la red entre las maquinas. Por ejemplo “N1 y N2 mandan todo a N3”
@@ -12,11 +10,6 @@
     2. Qué tipo de fragmentación utilizó?
     3. Indicar en algebra relacional como sería la query que reconstruya las tablas originales
 
-- Dar 2 heuristicas que use el optimizador de consultas. Ejemplifique.
-
-- ¿Qué es gobierno de datos? Diferencias entre datos, información y conocimiento.
-
-- Defina bases de datos distribuida. ¿Qué nuevos niveles de transparencia aparecen junto a estas bases?
 
 - ¿Qué es Data Mining? Describir las distintas técnicas.
 
