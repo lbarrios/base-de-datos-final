@@ -1,4 +1,4 @@
-# Normalización
+# 05. Normalización
 
 ## Marco general
 - Salida del diseño -> conjunto de relaciones
@@ -190,7 +190,7 @@ Herramienta formal para el análisis de esquemas. Permite detectar y describir p
 - Informalmente: restricción entre dos conjuntos de atributos `X` e `Y` de una BBDD. Los valores que toman los atributos de `Y` dependen de los valores que tomen `X`.
 - Ejemplo:
     + **DF1: {E_DNI, P_NUMERO} ⟹ HORAS**
-        ```
+        ```text
         E_DNI, P_NUMERO, HORAS, E_NOMBRE, P_NOMBRE, P_UBICACION
         -----  --------
           v       v       ^
@@ -198,7 +198,7 @@ Herramienta formal para el análisis de esquemas. Permite detectar y describir p
           v-------v-------^
         ```
     + **DF2: E_DNI ⟹ E_NOMBRE**
-        ```
+        ```text
         E_DNI, P_NUMERO, HORAS, E_NOMBRE, P_NOMBRE, P_UBICACION
         -----  --------
           v       v                ^
@@ -206,7 +206,7 @@ Herramienta formal para el análisis de esquemas. Permite detectar y describir p
           v-------v----------------^
         ```
     + **DF3: P_NUMERO ⟹ {P_NOMBRE, P_UBICACION}**
-        ```
+        ```text
         E_DNI, P_NUMERO, HORAS, E_NOMBRE, P_NOMBRE, P_UBICACION
         -----  --------
                   v                           ^          ^
@@ -346,7 +346,7 @@ Un esquema R está en 2FN si todo atributo no primo _A_ de _R_ depende funcional
 
 - Ejemplo descomposición en 2FN:
     + **EP1**
-        ```
+        ```text
         E_DNI, P_NUMERO, HORAS
         -----  --------
           v       v       ^
@@ -354,7 +354,7 @@ Un esquema R está en 2FN si todo atributo no primo _A_ de _R_ depende funcional
           v-------v-------^
         ```
     + **EP2**
-        ```
+        ```text
         E_DNI, E_NOMBRE
         ----- 
           v       ^
@@ -362,7 +362,7 @@ Un esquema R está en 2FN si todo atributo no primo _A_ de _R_ depende funcional
           v-------^
         ```
     + **EP3**
-        ```
+        ```text
         P_NUMERO, P_NOMBRE, P_UBICACION
         --------                       
         v          ^          ^
@@ -379,7 +379,7 @@ Un esquema está en 3FN si está en 2FN, y además ningún atributo no primo de 
 
 - Ejemplo descomposición 3FN
     + **EMPLEADO_DEPARTAMENTO** (es 2FN, pero no es 3FN)
-        ```
+        ```text
         E_NOMBRE | <E_CUIL> | E_FECHA_NACIMIENTO | NRO_DPTO | D_NOMBRE
             ^          v              ^              ^ v         ^
             |          |              |              | |         |
@@ -389,7 +389,7 @@ Un esquema está en 3FN si está en 2FN, y además ningún atributo no primo de 
         ```
 
     + **EMPLEADO**
-        ```
+        ```text
         E_NOMBRE | <E_CUIL> | E_FECHA_NACIMIENTO | NRO_DPTO
             ^          v              ^               ^
             |          |              |               |
@@ -397,7 +397,7 @@ Un esquema está en 3FN si está en 2FN, y además ningún atributo no primo de 
         ```
 
     + **DEPARTAMENTO**
-        ```
+        ```text
         <NRO_DPTO> | D_NOMBRE
            v            ^
            |            |
@@ -451,7 +451,7 @@ El diseñador de la BD especifica DF semánticamente obvias. Existen DF no espec
 - Clausura de _X_: conjunto de atributos que son determinados por _X_ basados en _F_. Se denota _X⁺_.
 
 **Algoritmo para determinar X⁺**
-```
+```tex
 X⁺ := X
 repetir
     viejoX⁺ := X⁺
@@ -464,7 +464,7 @@ mientras(X⁺==viejoX⁺)
 ### Clave de una relación
 Búsqueda de una clave _K_ en _R_ a partir de un conjunto de DFs.
 
-```
+```text
 K := R
 para cada atributo A∈K
     calcular (K−A)⁺

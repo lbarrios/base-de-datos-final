@@ -1,4 +1,4 @@
-# Logging
+# 16. Logging
 
 Existen 3 tipos de fallas:
 - de transacciones

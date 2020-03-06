@@ -1,4 +1,4 @@
-# Schedules
+# 14. Schedules
 
 ## Transacción
 Una transacción es una colección de operaciones que deben aplicarse de forma atómica en una base de datos. Esta atomicidad, además aplica a la consistencia (las restricciones de la base), es decir que si una base de datos era consistente antes de una transacción, debe seguir siéndolo luego de aplicar la misma. La base puede volverse, sin embargo, inconsistente de forma temporal durante la aplicación de las operaciones internas de la transacción.

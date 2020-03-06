@@ -1,4 +1,4 @@
-# Data Warehousing
+# 10. Data Warehousing
 
 ## Business Intelligence
 Término genérico que incluye aplicaciones, infraestructura, herramientas y prácticas que permiten el acceso y el análisis de la información para mejorar y optimizar las deciciones y el rendimiento.

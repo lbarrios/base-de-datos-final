@@ -1,11 +1,11 @@
-# Data Mining
+# 24. Data Mining
 Extracción de patrones o información interesante de grandes bases de datos.
 
 ## Descubrimiento del conocimiento (KDD Process)
 
 - Data mining es el core del proceso de descubrimiento del conocimiento.
 
-```
+```text
 DATABASES
    \
     ---------> data warehouse

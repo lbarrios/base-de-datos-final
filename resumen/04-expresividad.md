@@ -1,4 +1,4 @@
-# Expresividad
+# 04. Expresividad
 Es la amplitud de ideas que pueden ser representadas por un lenguaje.
 
 - más expresividad ⟹ más variedad y cantidad de ideas

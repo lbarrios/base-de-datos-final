@@ -1,4 +1,4 @@
-# Long Duration Transactions
+# 17. Long Duration Transactions
 
 - Existen transacciones que pueden durar o insumir mucho más tiempo o cómputo de lo normal.
     + Transacciones que afecten a una cantidad inmensa de registros.

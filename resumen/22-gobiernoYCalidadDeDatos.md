@@ -1,4 +1,4 @@
-# Gobierno y Calidad de Datos
+# 22. Gobierno y Calidad de Datos
 
 ## Tipos de datos
 
@@ -51,7 +51,7 @@
 
 ### Madurez del gobierno de datos
 
-```
+```text
   ∧                                               | R
 V |                                   GOBERNADO   | i
 a |                         PROACTIVO             | e
@@ -115,7 +115,7 @@ r |                                               ∨ o
 
 ## Administración de los datos
 
-```
+```text
 Datos -------> Información ------> Conocimiento
 + metadata     + asunciones
 (definición    + relaciones

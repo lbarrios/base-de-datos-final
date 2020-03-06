@@ -1,4 +1,4 @@
-# Integración de Datos
+# 20. Integración de Datos
 
 - Aplicaciones necesitan acceder a datos en lugares
     + Diferentes **sitios físicos**
@@ -11,7 +11,7 @@
 ## Integración de Datos (Data Integration - Data Federation)
 - Se consultan datos **heterogéneos** de diferentes fuentes via un **esquema virtual global**.
 
-```
+```text
            ∑₁
 |DB1| S₁<------
            ∑₂  \
@@ -30,7 +30,7 @@
 ## Intercambio de Datos (Data Exchange - Data Translation)
 Se **transforman** datos estructurados bajo un esquema **origen en datos** estructurados bajo un **esquema destino**.
 
-```
+```text
         ∑
   S ----------> T
 |DBₛ| - - - > |DBₜ|
@@ -44,7 +44,7 @@ Son piezas fundamentales para la formalización y el estudio de interoperabilida
     + Fáciles de generar y manejar (semi)automáticamente
     + Compilados en scripts SQL/XSLT
 
-```
+```text
          ∑
   S ----------> T
 |DBₛ| - - - > |DBₜ|

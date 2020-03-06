@@ -7,6 +7,12 @@
 ./generar_html.py
 ```
 
+## Todo el resumen en HTML
+* TODO
+
+## Todo el resumen en PDF
+* TODO
+
 ## Links a temas resumidos:
 
 * [Modelo relacional](01-modeloRelacional.md) ([clase teórica 01 - modeloRelacional](../teoricas/ct01-modeloRelacional.pdf))

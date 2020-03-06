@@ -1,4 +1,4 @@
-# Álgebra Relacional
+# 02. Álgebra Relacional
 Conjunto de elementos junto con sus propiedades operacionales determinadas y las propiedades matemáticas que dichas operaciones poseen.
 
 - Lenguaje formal utilizado en el modelo relacional.
@@ -16,23 +16,26 @@ Conjunto de elementos junto con sus propiedades operacionales determinadas y las
 ## Select
 Selecciona un subconjunto de tuplas de una relación a través de una condición lógica.
 
-- Notación: σ\<condicion>(R).
+- Notación: σ<condicion\>(R).
 - Genera una **partición horizontal** de la relación.
 
 **EMPLEADO**
+
 | dni | nombre | sexo | salario |
 | --- | ------ | ---- | ------- |
 | 1   | Diego  | M    | 20000   |
 | 2   | Laura  | F    | 25000   |
 | 3   | Marina | F    | 10000   |
 
-- σ\<sexo=F>(EMPLEADO)
+- σ<sexo=F\>(EMPLEADO)
+    
     | dni | nombre | sexo | salario |
     | --- | ------ | ---- | ------- |
     | 2   | Laura  | F    | 25000   |
     | 3   | Marina | F    | 10000   |
 
-- σ\<sexo=F AND salario>15000>(EMPLEADO)
+- σ<sexo=F AND salario\>15000>(EMPLEADO)
+    
     | dni | nombre | sexo | salario |
     | --- | ------ | ---- | ------- |
     | 2   | Laura  | F    | 25000   |
@@ -40,26 +43,28 @@ Selecciona un subconjunto de tuplas de una relación a través de una condición
 ### Propiedades:
 - Operador Unario
 - Grado(σ(R)) = Grado(R) (misma aridad que la relación)
-- #tuplas: |σ(R)| ≤ |R|
+- \#tuplas: |σ(R)| ≤ |R|
 - Conmutatividad: σ₁(σ₂(R)) = σ₂(σ₁(R))
-- Cascada: σ₁(σ₂(⋯(σₙ(R))⋯)) = σ\<1 and 2 and ⋯ and n>(R)
+- Cascada: σ₁(σ₂(⋯(σₙ(R))⋯)) = σ<1 and 2 and ⋯ and n\>(R)
 - SQL: se especifica en la cláusula **WHERE**, se corresponden:
-    + σ\<sexo=F AND salario>15000>(EMPLEADO) 
+    + σ<sexo=F AND salario>15000\>(EMPLEADO) 
     + SELECT * FROM EMPLEADO WHERE sexo=F AND salario>15000;
 
 ## Project
 Selecciona un subconjunto de columnas de una relación
-- Notación: π\<lista de atributos>(R)
+- Notación: π<lista de atributos\>(R)
 - Genera una **partición vertical** de la relación.
 
 **EMPLEADO**
+
 | dni | nombre | sexo | salario |
 | --- | ------ | ---- | ------- |
 | 1   | Diego  | M    | 20000   |
 | 2   | Laura  | F    | 25000   |
 | 3   | Marina | F    | 10000   |
 
-- π\<dni,salario>(EMPLEADO)
+- π<dni,salario\>(EMPLEADO)
+
     | dni | salario |
     | --- | ------- |
     | 1   | 20000   |
@@ -68,23 +73,25 @@ Selecciona un subconjunto de columnas de una relación
 
 ### Propiedades
 - Operador Unario
-- Grado(π\<lista de atributos>(R)) = |<lista de atributos>|
-- #tuplas: |π\<lista de atributos>(R)| ≤ |R|
+- Grado(π<lista de atributos\>(R)) = |<lista de atributos>|
+- \#tuplas: |π<lista de atributos\>(R)| ≤ |R|
     + Remueve las tuplas duplicadas
-    + Conservación de # tuplas: si <lista de atributos> es superclave de R, entonces |π\<lista de atributos>(R)| = |R|
+    + Conservación de # tuplas: si <lista de atributos> es superclave de R, entonces |π<lista de atributos\>(R)| = |R|
 - No es conmutativa.
-    + π\<lista₁>(π\<lista₁>(R)) = π\<lista1>(R) ⟹ lista₁ ⊆ lista₂
+    + π<lista₁\>(π<lista₁\>(R)) = π<lista1\>(R) ⟹ lista₁ ⊆ lista₂
 - SQL: se especifica en la cláusula **SELECT DISTINCT**, se corresponden:
-    + π\<sexo,salario>(EMPLEADO)
+    + π<sexo,salario\>(EMPLEADO)
     + SELECT DISTINCT Sexo,Salario FROM EMPLEADO;
 
 ## Rename
 Asigna nombre a atributos/relación resultado.
-- Notación: ρ\<NOMBRE_RESULTADO>(R) o ρ(A₁→B₁, ⋯, Aₙ→Bₙ, R)
+
+- Notación: ρ<NOMBRE_RESULTADO\>(R) o ρ(A₁→B₁, ⋯, Aₙ→Bₙ, R)
 
 ### Ejemplo 1: Relaciones
 
 **EMPLEADO**
+
 | dni | nombre | sexo | salario |
 | --- | ------ | ---- | ------- |
 | 1   | Diego  | M    | 20000   |
@@ -92,21 +99,24 @@ Asigna nombre a atributos/relación resultado.
 | 3   | Marina | F    | 10000   |
 
 Son equivalentes:
-- π\<nombre,sexo>(σ\<salario≥15000>(empleado))
+
+- π<nombre,sexo\>(σ<salario≥15000\>(empleado))
 
 y
 
-1. ρ\<SALARIO_MAYOR>(σ\<salario≥15000>(EMPLEADO))
+1. ρ<SALARIO_MAYOR\>(σ<salario≥15000\>(EMPLEADO))
     
     **SALARIO_MAYOR**
+
     | dni | nombre | sexo | salario |
     | --- | ------ | ---- | ------- |
     | 1   | Diego  | M    | 20000   |
     | 2   | Laura  | F    | 25000   |
 
-2. ρ\<RESULT>(π\<nombre,sexo>(SALARIO_MAYOR))
+2. ρ<RESULT\>(π<nombre,sexo\>(SALARIO_MAYOR))
     
     **RESULT**
+    
     | nombre | sexo |
     | ------ | ---- |
     | Diego  | M    |
@@ -115,6 +125,7 @@ y
 ### Ejemplo 2: Atributos
 
 **EMPLEADO**
+
 | dni | nombre | sexo | salario |
 | --- | ------ | ---- | ------- |
 | 1   | Diego  | M    | 20000   |
@@ -122,7 +133,8 @@ y
 | 3   | Marina | F    | 10000   |
 
 - SQL: se especifica en la cláusula **AS**, se corresponden:
-    + ρ\<EMP(dni→id, salario→ingreso)>(π\<dni,salario>(EMPLEADO))
+    + ρ<EMP(dni→id, salario→ingreso)\>(π<dni,salario\>(EMPLEADO))
+        
         | id  | ingreso |
         | --- | ------- |
         | 1   | 20000   |
@@ -140,6 +152,7 @@ Equivalente a operaciones matemáticas sobre conjuntos
     + (∀i, 1≤i≤n) tipo(Aᵢ) = tipo(Bᵢ)
 
 **ALUMNOS_BD**
+
 | id | nombre |
 | -- | ------ |
 | 1  | Diego  |
@@ -147,6 +160,7 @@ Equivalente a operaciones matemáticas sobre conjuntos
 | 3  | Marina |
 
 **ALUMNOS_TLENG**
+
 | id | nombre    |
 | -- | ------    |
 | 2  | Laura     |
@@ -154,9 +168,10 @@ Equivalente a operaciones matemáticas sobre conjuntos
 
 - Union: R∪S, incluye todas las tuplas que están en R, en S, o en ambas a la vez, eliminando duplicados.
 
-    + **ρ\<UNION\>(ALUMNOS_BD ∪ ALUMNOS_TLENG)**
+    + **ρ<UNION\>(ALUMNOS_BD ∪ ALUMNOS_TLENG)**
     
         **UNION**
+        
         | id | nombre    |
         | -- | ------    |
         | 1  | Diego     |
@@ -166,18 +181,20 @@ Equivalente a operaciones matemáticas sobre conjuntos
 
 - Intersection: R∩S, incluye todas las tuplas que están a la vez en R y S.
 
-    + **ρ\<INTERSECCION\>(ALUMNOS_BD ∩ ALUMNOS_TLENG)**
+    + **ρ<INTERSECCION\>(ALUMNOS_BD ∩ ALUMNOS_TLENG)**
     
         **INTERSECCION**
+        
         | id | nombre    |
         | -- | ------    |
         | 2  | Laura     |
 
 - Set difference (o minus): R−S, incluye todas las tuplas que están en R, pero no están en S.
 
-    + **ρ\<DIFERENCIA\>(ALUMNOS_BD ∩ ALUMNOS_TLENG)**
+    + **ρ<DIFERENCIA\>(ALUMNOS_BD ∩ ALUMNOS_TLENG)**
 
         **DIFERENCIA**
+        
         | id | nombre    |
         | -- | ------    |
         | 1  | Diego     |
@@ -219,7 +236,7 @@ AR|Argentina
 BR|Brasilera
 CH|Chilena
 
-- ρ\<RESULT>(PERSONA×NACIONALIDADES)
+- ρ<RESULT>(PERSONA×NACIONALIDADES)
 
 **RESULT**
 
@@ -242,7 +259,7 @@ Marina|AR|CH|Chilena
 ## Join
 Permite combinar pares de tuplas relacionadas
 
-- Notación: R⋈\<condicion\>S
+- Notación: R⋈<condicion\>S
 
 **PERSONA**
 
@@ -261,7 +278,7 @@ BR|Brasilera
 CH|Chilena
 
 
-- ρ\<RESULT>(PERSONA⋈<nacionalidad=idn>NACIONALIDADES)
+- ρ<RESULT>(PERSONA⋈<nacionalidad=idn>NACIONALIDADES)
 
 **RESULT**
 
@@ -449,9 +466,9 @@ santiago|tleng
 
 - Operación compuesta: se puede expresar como secuencia de operaciones (π, ×, −). Ejemplo, son equivalentes:
     + ALUMNOS÷MATERIAS_3
-    1. ρ\<TEMP1>(π\<nombre>(ALUMNOS))
-    2. ρ\<TEMP2>(π\<nombre>((TEMP1×MATERIAS_3)−ALUMNOS))
-    3. ρ\<RESULT>(TEMP1−TEMP2)
+    1. ρ<TEMP1\>(π<nombre\>(ALUMNOS))
+    2. ρ<TEMP2\>(π<nombre\>((TEMP1×MATERIAS_3)−ALUMNOS))
+    3. ρ<RESULT\>(TEMP1−TEMP2)
 
 **TEMP_1**
 

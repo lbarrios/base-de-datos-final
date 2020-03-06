@@ -1,4 +1,4 @@
-# Distributed Databases
+# 19. Distributed Databases
 Una base de datos distribuída es una colección de múltiples bases de datos que están lógicamente relacionadas y se encuentran distribuídas en una red de computadoras.
 
 Condiciones que debe satisfacer:

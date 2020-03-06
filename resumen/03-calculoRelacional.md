@@ -1,4 +1,4 @@
-# Cálculo Relacional de Tuplas
+# 03. Cálculo Relacional de Tuplas
 **Lenguaje de consultas** al igual que Álgebra Relacional
 
 - **Declarativo** (no tiene un orden de evaluación, no es procedural)
@@ -6,7 +6,7 @@
 - SQL tiene fundamentos en CRT
 
 
-- Notación: ```{t | COND(t)}```
+- Notación: `{t | COND(t)}`
     + `t` es una variable de tipo tupla.
         * `t` es la única **variable libre** de la expresión.
     + `COND(t)` es una expresión booleana condicional que afecta a `t`.
@@ -58,7 +58,7 @@ GG  | Gerencia General
     2. Listar el nombre de cada empleado del Departamento de investigación junto al de su supervisor.
         - `{t | (∃e)(∃s)(e∈EMPLEADO ∧ s∈EMPLEADO ∧ e.depto='IN' ∧ e.supervisor=s.dni ∧ t.nombre=e.nombre ∧ t.supervisor=s.nombre}`
 4. Listar el nombre de los empleados que trabajan en RRHH o que su supervisor gana más de 15000
-```
+```text
     {t | (∃e)(e∈EMPLEADO ∧ (
         (e.dpto='RH')
         ∨

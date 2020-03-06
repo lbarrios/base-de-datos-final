@@ -1,4 +1,4 @@
-# Control de Concurrencia
+# 15. Control de Concurrencia
 
 ## Problemas básicos
 
@@ -56,7 +56,7 @@ Grafo que representa qué operaciones esperan de otras.
 - Hay deadlock si se forma un ciclo.
 
 Ejemplo WFG sin deadlock
-```
+```text
         --> T2 ---> T4
        /    ∧
       /     |
@@ -67,7 +67,7 @@ Ejemplo WFG sin deadlock
 ```
 
 Ejemplo WFG con deadlock (T2->T4->T3->T2)
-```
+```text
         --> T2 -----> T4
        /    ∧         /
       /     |        /
