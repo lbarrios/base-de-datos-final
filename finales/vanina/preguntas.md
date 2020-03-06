@@ -25,8 +25,6 @@
 
 - Explicar bases NoSQL por documentos, explicando el concepto de documento. Mostrar cómo sería una base por documentos para el ejercicio anterior (no sé si había que hacer el DID, poner los jsons o ambos).
 
-- Dar dos propiedades del álgebra relacional que se puedan usar para optimizar consultas y ejemplificar.
-
 - Tenias dos tablas: Estudiantes E: (idEstudiante, nombreEstudiante, idUniversidad, fechaNac), Facultad F: (idFacultad, nombreFacultad). Un estudiante va a 1 y solo 1 facultad. La tabla Estudiantes tiene 10000 registros de 30 bytes cada uno. La tabla universidad tiene 100 registros de 20 bytes cada uno. Suponga una base de datos distribuida de 3 nodos N1, N2 y N3 donde N1 tiene la tabla estudiantes, N2 tiene la tabla facultades y N3 no tiene nada.
     1. Expresar en álgebra relacional la consulta: “devolver id de estudiante y nombre de la facultad para los estudiantes que hayan nacido despues de 1980” (universidad y facultad es lo mismo acá, es sólo para que haya que ponerle condición al join)
     2. Dar dos estrategias de resolución de esta query, indicando cuantos bytes se transfieren por la red entre las maquinas. Por ejemplo “N1 y N2 mandan todo a N3”

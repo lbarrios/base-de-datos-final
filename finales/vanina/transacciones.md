@@ -14,4 +14,15 @@ Durability / Durabilidad: cuando una transacción es commiteada, esta es persist
 
 ## - Dar un ejemplo de transacciones de algún dominio. ¿Por qué es importante el control de concurrencia?
 
-==TODO:==
+(de cubawiki)
+
+Una transacción es un conjunto de instrucciones que se ejecutan formando una unidad lógica de procesamiento. Una transacción puede incluir uno o más accesos a la BD a través del uso de diversas operaciones (inserción, eliminación, modificación, etc.).
+
+Diversos sistemas como los bancarios, los de reservas de vuelos o del mercado de valores, usan transacciones para garantizar la consistencia de los datos. Por ejemplo, un sistema bancario que usa una transacción para actualizar dos saldos a causa una transferencia evita la pérdida o creación de dinero en caso de fallas. En este caso, la atomicidad de la transacción garantiza que se ejecuta completo o se deshace por completo.
+
+Este tipo de sistemas requieren rápida respuesta y alta disponibilidad para muchos usuarios que acceden de manera concurrente. En este escenario, un motor de base de datos hace uso de la multiprogramación, intercalando operaciones de distintas transacciones que se ejecutan concurrentemente. El control de concurrencia resulta importante pues queremos evitar que una transacción interfiera con otra: para el usuario, las transacciones se comportan como si se hubieran ejecutado una a continuación de la otra. De no manejar la concurrencia, pueden aparecer distintos problemas como:
+
+- Lost update
+- Dirty read
+- Incorrect summary
+- Unrepeatable read

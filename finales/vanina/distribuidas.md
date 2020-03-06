@@ -16,3 +16,5 @@ Ejecución: el usuario debería poder realizar una ejecución sin tener que cono
 
 
 ## - ¿Qué es fragmentación mixta? Dar un ejemplo, con una query en álgebra relacional para reconstruir las tablas originales
+
+==TODO:==

@@ -1,3 +1,17 @@
+## - Definir las operaciones del Álgebra Relacional
+
+R(a,b,c,d){(1,1,1,1),(2,2,2,2),(3,3,3,3),(4,4,4,4)}
+Q(a,e){(1,10),(2,20),(5,50),(6,60)}
+
+π - Proyección: π {a} R = R'(a){(1),(2),(3),(4)}
+σ - Select: σ {a≤2} R = R'(a,b,c,d){(1,1,1,1),(2,2,2,2)}
+⋈ - Join: R ⋈{a=a} Q = R'(a,b,c,d,a_q,e){(1,1,1,1,1,10),(2,2,2,2,2,20)}
+⋈ - Natural Join: R ⋈{a=a} Q = R'(a,b,c,d,e){(1,1,1,1,10),(2,2,2,2,20)}
+ρ - Rename: cambia el nombre de una relación o un atributo
+∪ - Unión: unión de conjuntos en dos tuplas
+∩ - Intersección: intersección de conjuntos en dos tuplas
+− - Diferencia: diferencia de conjuntos en dos tuplas
+
 ## - Definir esquema.
 
 Un esquema representa al diseño lógico de la base de datos. Cuando se habla del esquema de una relación, se refiere puntualmente al nombre de dicha relación junto con sus atributos.
