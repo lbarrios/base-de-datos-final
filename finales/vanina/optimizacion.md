@@ -17,3 +17,4 @@ Una selección en donde la condición es una conjunción σ\<cond_1 ∧ cond_2\>
 Las operaciones de selección son conmutativas, es decir que σ\<cond_1\>(σ\<cond_2\>(E)) es equivalente a σ\<cond_2\>(σ\<cond_1\>(E)).
 
 Los natural join son asociativos. (A⋈B)⋈C = A⋈(B⋈C)
+

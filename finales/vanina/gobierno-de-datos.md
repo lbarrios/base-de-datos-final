@@ -31,3 +31,4 @@ El administrador de datos trabaja con el modelo conceptual y lógico, es un perf
 El DBA trabaja con el modelo físico, es un especialista en el motor de base de datos. Esta persona es quien conoce los detalles de un motor de base de datos, y es asistido por el administrador de datos en la creación de los modelos físicos a partir de los modelos lógicos.
 
 Esto está fuertemente relacionado con el concepto de independencia física y transparencia, ya que si bien trabajan en colaboración el administrador de datos puede abstraerse de los aspectos físicos de la base y trabajar con los aspectos lógicos gracias a la transparencia física; asímismo el DBA puede desentenderse de los aspectos lógicos y realizar cambios u optimizaciones en el modelo físico. Todo esto, en la medida de que el nivel de independencia lo permita.
+

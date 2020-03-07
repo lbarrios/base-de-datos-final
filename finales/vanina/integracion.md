@@ -5,3 +5,4 @@
 Enfoques:
 + Integración de datos: Se consultan datos **heterogéneos** de diferentes fuentes via un **esquema virtual global**.
 + Intercambio de datos: Se **transforman** datos estructurados bajo un esquema **origen en datos** estructurados bajo un **esquema destino**.
+

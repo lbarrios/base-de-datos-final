@@ -26,3 +26,4 @@ Este tipo de sistemas requieren rápida respuesta y alta disponibilidad para muc
 - Dirty read
 - Incorrect summary
 - Unrepeatable read
+

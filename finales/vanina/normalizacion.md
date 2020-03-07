@@ -99,3 +99,4 @@ Anomalías de inserción: este esquema no permite agregar información de depart
 idEmpleado  idDepartamento  nombreDepartamento
 NULL    35  Ingeniería
 NULL    36  Calidad
+
