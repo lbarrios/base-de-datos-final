@@ -1,6 +1,7 @@
 # 16. Logging
 
 Existen 3 tipos de fallas:
+
 - de transacciones
 - de sistema
 - de almacenamiento

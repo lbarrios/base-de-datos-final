@@ -22,7 +22,7 @@
             3. Si el valor que toma el atributo de `r` satisface la condición, el resultado es verdadero.
         * Se define recursivamente de la siguiente manera:
             1. Todo predicado atómico es una fórmula.
-            2. `(F₁ ∧ F₂)`, `(F₁ ∨ F₂)`, `(¬F₁)` son fórmulas, donde `F₁` y `F₂``son fórmulas.
+            2. `(F₁ ∧ F₂)`, `(F₁ ∨ F₂)`, `(¬F₁)` son fórmulas, donde `F₁` y `F₂` son fórmulas.
             3. `(∃r)(F)`. Es una fórmula si `F` es una fórmula en donde la variable de tipo tupla `r` aparece al menos una vez de manera libre. Es verdadera cuando existe un valor de `r` que satisfaga `F`.
             4. `(∀r)(F)`. Es una fórmula si `F` es una fórmula en donde la variable de tipo tupla `r` aparece al menos una vez de manera libre. Es verdadera cuando todos los valores de `r` satisfacen `F`.
     + El resultado es el conjunto de todas las tuplas `t` que satisfacen `COND(t)`.
@@ -58,12 +58,12 @@ GG  | Gerencia General
     2. Listar el nombre de cada empleado del Departamento de investigación junto al de su supervisor.
         - `{t | (∃e)(∃s)(e∈EMPLEADO ∧ s∈EMPLEADO ∧ e.depto='IN' ∧ e.supervisor=s.dni ∧ t.nombre=e.nombre ∧ t.supervisor=s.nombre}`
 4. Listar el nombre de los empleados que trabajan en RRHH o que su supervisor gana más de 15000
-```text
-    {t | (∃e)(e∈EMPLEADO ∧ (
-        (e.dpto='RH')
-        ∨
-        (∃s)(s∈EMPLEADO ∧ e.supervisor=s.dni ∧ s.salario>15000)
-    ) ∧ t.nombre=e.nombre)}
-```
+    ```text
+        {t | (∃e)(e∈EMPLEADO ∧ (
+            (e.dpto='RH')
+            ∨
+            (∃s)(s∈EMPLEADO ∧ e.supervisor=s.dni ∧ s.salario>15000)
+        ) ∧ t.nombre=e.nombre)}
+    ```
 5. Listar los empleados que no tienen supervisor asignado
     - `{t | (∃e)(e∈EMPLEADO ∧ (∀s)(s∈EMPLEADO ⟹ e.supervisor≠s.dni) ∧ t.nombre=e.nombre)}`

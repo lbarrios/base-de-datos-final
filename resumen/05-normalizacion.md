@@ -10,25 +10,25 @@
     + Preservar la información
     + Minimizar la redundancia
 
-### Pautas de diseño
+## Pautas de diseño (SANE)
 1. **Semántica**: Estar seguro de que la semántica de atributos en el esquema es clara
 2. **Almacenamiento**: Reducir la información redundante en las tuplas
-3. Reducir la cantidad de valores NULL en las tuplas
-4. Deshabilitar la posibilidad de generar tuplas espúreas
+3. Reducir la cantidad de **valores NULL** en las tuplas
+4. Deshabilitar la posibilidad de generar **tuplas espúreas**
 
 - Estas pautas no son siempre independientes entre sí.
 
-## Pauta 1: Semántica
+### Pauta 1: Semántica
 Objetivo: cuanto más fácil es explicar la semántica en los esquemas, mejor es el diseño
 
 - Mal diseño: `EMPLEADO_PROYECTO: {E_NOMBRE, E_DNI, E_NACIMIENTO, DIRECCION, P_NOMBRE, P_NUMERO}`
 - Buen diseño: `EMPLEADO{E_NOMBRE, E_DNI, E_NACIMIENTO, DIRECCION}, PROYECTO{P_NOMBRE, P_NUMERO}, TRABAJA_EN{E_DNI, P_NUMERO}`
 
-### Pautas
+#### Pautas
 - Diseñar esquemas para que sea fácil explicar su significado.
 - No combinar atributos de distintos tipos de entidades y relaciones en una misma relación.
 
-## Pauta 2: Almacenamiento
+### Pauta 2: Almacenamiento
 Objetivo: minimizar el espacio de almacenamiento a través del diseño.
 
 - Mal diseño: `EMPLEADO_DEPARTAMENTO{E_NOMBRE, E_DNI, NRO_DPTO, D_NOMBRE}`
@@ -62,7 +62,7 @@ Objetivo: minimizar el espacio de almacenamiento a través del diseño.
 
 - Un mal diseño puede generar anomalías de actualización (inserción, eliminación, actualización).
 
-### Anomalías de inserción
+#### Anomalías de inserción
 - Insertar un empleado que aún no posee departamento requiere introducir valores `NULL`
 
     E_NOMBRE | E_DNI | NRO_DPTO | D_NOMBRE | (Problema)
@@ -83,7 +83,7 @@ Objetivo: minimizar el espacio de almacenamiento a través del diseño.
     1. NULL en el campo de empleado violaría la integridad de la clave (E_DNI)
     2. Esa tupla dejaría de tener sentido si se asigna un empleado a ese departamento
 
-### Anomalías de eliminación
+#### Anomalías de eliminación
 - Eliminar el único empleado de un departamento hace que se pierda toda la información relacionada al mismo.
 
     E_NOMBRE | E_DNI | NRO_DPTO | D_NOMBRE | (problema)
@@ -94,7 +94,7 @@ Objetivo: minimizar el espacio de almacenamiento a través del diseño.
     Santiago | 44444 | 5        | Publicidad y Promoción |
     ........ | ..... | ........ | ........................ |
 
-### Anomalías de modificación
+#### Anomalías de modificación
 - Modificar el valor de un atributo de un departamento requiere modificar **TODAS** las tuplas de ese departamento. Sino se generan inconsistencias.
 
     E_NOMBRE | E_DNI | NRO_DPTO | D_NOMBRE | (problema)
@@ -105,13 +105,13 @@ Objetivo: minimizar el espacio de almacenamiento a través del diseño.
     Santiago | 44444 | 5        | **_Publicidad y Promoción_** | <- Original (inconsistente)
     ........ | ..... | ........ | ........................ |
 
-### Performance
+#### Performance
 - Esta pauta puede ser violada en favor de la performance.
 - Por ejemplo, al guardar una factura, esto afecta el saldo del cliente. Este saldo se puede reconstruir recorriendo todas las facturas y pagos realizados, pero es "costoso" ya que es un dato frecuentemente consultado.
     + La solución sería guardar el saldo, y recalcular el saldo en cada pago.
     + Se debe utilizar algún mecanismo que permita automatizar esto último (triggers/store procedures, etc)
 
-## Pauta 3: NULLs
+### Pauta 3: NULLs
 Atributos no relacionados agrupados en una misma tabla pueden generar múltiples NULL en una misma tupla.
 
 **EMPLEADO_DEPARTAMENTO**
@@ -132,11 +132,11 @@ Tamar    | 55555 | **_NULL_** | **_NULL_**
     + El valor es desconocido (no sabemos si existe o no)
         * Ejemplo: teléfono.
 
-### Pautas
+#### Pautas
 - Evitar asignar atributos a una relación si estos pueden ser NULL frecuentemente
 - Si los NULL son inevitables, asegurar que sean situaciones excepcionales.
 
-## Pauta 4: Tuplas Espúreas
+### Pauta 4: Tuplas Espúreas
 Las tuplas espúreas representan información no válida.
 
 - Esquema original
@@ -180,7 +180,7 @@ Las tuplas espúreas representan información no válida.
 
 - **Problema**: `P_UBICACION` relaciona ambos esquemas pero no es clave primaria ni foránea de ninguno de ellos.
 
-### Pautas
+#### Pautas
 - Diseñar esquemas que puedan ser relacionads por atributos que se encuentren relacionados por condiciones de igualdad entre ellos (clave primaria/foránea).
 - Evitar relaciones que contengan atributos de matching que no sean combinación de claves primaria/foránea, ya que los JOINS pueden introducir tuplas espúreas.
 
@@ -188,31 +188,38 @@ Las tuplas espúreas representan información no válida.
 Herramienta formal para el análisis de esquemas. Permite detectar y describir problemas descriptos previamente.
 
 - Informalmente: restricción entre dos conjuntos de atributos `X` e `Y` de una BBDD. Los valores que toman los atributos de `Y` dependen de los valores que tomen `X`.
-- Ejemplo:
-    + **DF1: {E_DNI, P_NUMERO} ⟹ HORAS**
-        ```text
-        E_DNI, P_NUMERO, HORAS, E_NOMBRE, P_NOMBRE, P_UBICACION
-        -----  --------
-          v       v       ^
-          |       |       |
-          v-------v-------^
-        ```
-    + **DF2: E_DNI ⟹ E_NOMBRE**
-        ```text
-        E_DNI, P_NUMERO, HORAS, E_NOMBRE, P_NOMBRE, P_UBICACION
-        -----  --------
-          v       v                ^
-          |       |                |
-          v-------v----------------^
-        ```
-    + **DF3: P_NUMERO ⟹ {P_NOMBRE, P_UBICACION}**
-        ```text
-        E_DNI, P_NUMERO, HORAS, E_NOMBRE, P_NOMBRE, P_UBICACION
-        -----  --------
-                  v                           ^          ^
-                  |                           |          |
-                  v---------------------------------------
-        ```
+
+Ejemplo:
+
+- **DF1: {E_DNI, P_NUMERO} ⟹ HORAS**
+    
+```text
+E_DNI, P_NUMERO, HORAS, E_NOMBRE, P_NOMBRE, P_UBICACION
+-----  --------
+  v       v       ^
+  |       |       |
+  v-------v-------^
+```
+
+- **DF2: E_DNI ⟹ E_NOMBRE**
+    
+```text
+E_DNI, P_NUMERO, HORAS, E_NOMBRE, P_NOMBRE, P_UBICACION
+-----  --------
+  v       v                ^
+  |       |                |
+  v-------v----------------^
+```
+
+- **DF3: P_NUMERO ⟹ {P_NOMBRE, P_UBICACION}**
+   
+```text
+E_DNI, P_NUMERO, HORAS, E_NOMBRE, P_NOMBRE, P_UBICACION
+-----  --------
+          v                           ^          ^
+          |                           |          |
+          v---------------------------------------
+```
 
 - Formalmente:
     + Esquema relacional de la BD posee atributos _A₁, A₂, ⋯, Aₙ_
@@ -269,55 +276,55 @@ Herramienta formal para el análisis de esquemas. Permite detectar y describir p
 
 **DEPARTAMENTO**
 
-D_NOMBRE       | <D_NUMERO> | D_MGR_CUIL | D_AREAS_INFLUENCIA
--------------- | ---------- | ---------- | ---------------------------
-Investigación  | 2          | 27-233-9   | {Argentina, Brasil, Uruguay}
-Prensa         | 3          | 20-172-4   | {Chile}
-Administración | 8          | 27-384-2   | {Argentina}
+D_NOMBRE       | <D_NUMERO\> | D_MGR_CUIL | D_AREAS_INFLUENCIA
+-------------- | ----------- | ---------- | ---------------------------
+Investigación  | 2           | 27-233-9   | {Argentina, Brasil, Uruguay}
+Prensa         | 3           | 20-172-4   | {Chile}
+Administración | 8           | 27-384-2   | {Argentina}
 
 1. Remover atributo que viola 1FN y ubicarlo en una nueva relación. La nueva relación tiene como PK ambos atributos.
     + Se mueve DPTO_AREAS_INFLUENCIA junto con la PK D_NUMERO.
 
         **DEPARTAMENTO**
 
-        D_NOMBRE       | <D_NUMERO> | D_MGR_CUIL
-        -------------- | ---------- | ----------
-        Investigación  | 2          | 27-233-9  
-        Prensa         | 3          | 20-172-4  
-        Administración | 8          | 27-384-2  
+        D_NOMBRE       | <D_NUMERO\> | D_MGR_CUIL
+        -------------- | ----------- | ----------
+        Investigación  | 2           | 27-233-9  
+        Prensa         | 3           | 20-172-4  
+        Administración | 8           | 27-384-2  
 
         **DEPARTAMENTO_AREAS**
 
-        <D_NUMERO> | <D_AREAS_INFLUENCIA>
-        ---------- | ---------------------
-        2          | Argentina
-        2          | Brasil
-        2          | Uruguay
-        3          | Chile
-        8          | Argentina
+        <D_NUMERO\> | <D_AREAS_INFLUENCIA\>
+        ----------- | ---------------------
+        2           | Argentina
+        2           | Brasil
+        2           | Uruguay
+        3           | Chile
+        8           | Argentina
     + Suele ser la mejor opción ya que no sufre de redundancia y es genérica (no se limita a un número de valores).
 2. Expandir la PK que permita que exista más de un mismo D_NUMERO, pero con distinta área de influencia.
     + Esta solución introduce **REDUNDANCIA** en la relación.
 
         **DEPARTAMENTO**
 
-        D_NOMBRE       | <D_NUMERO> | D_MGR_CUIL | <D_AREAS_INFLUENCIA>
-        -------------- | ---------- | ---------- | ---------------------
-        Investigación  | 2          | 27-233-9   | Argentina
-        Investigación  | 2          | 27-233-9   | Brasil
-        Investigación  | 2          | 27-233-9   | Uruguay
-        Prensa         | 3          | 20-172-4   | Chile
-        Administración | 8          | 27-384-2   | Argentina
+        D_NOMBRE       | <D_NUMERO\> | D_MGR_CUIL | <D_AREAS_INFLUENCIA\>
+        -------------- | ----------- | ---------- | ---------------------
+        Investigación  | 2           | 27-233-9   | Argentina
+        Investigación  | 2           | 27-233-9   | Brasil
+        Investigación  | 2           | 27-233-9   | Uruguay
+        Prensa         | 3           | 20-172-4   | Chile
+        Administración | 8           | 27-384-2   | Argentina
 3. Si se conoce la cantidad máxima de valores que puede tomar el atributo, se pueden generar tantos atributos como esa cantidad.
     + Ejemplo, si hay 3 áreas de influencia como máximo por departamento.
 
         **DEPARTAMENTO**
 
-        D_NOMBRE       | <D_NUMERO> | D_MGR_CUIL | D_AREAS_INFLUENCIA1 | D_AREAS_INFLUENCIA2 | D_AREAS_INFLUENCIA3
-        -------------- | ---------- | ---------- | -- | -- | --
-        Investigación  | 2          | 27-233-9   | Argentina | Brasil | Uruguay
-        Prensa         | 3          | 20-172-4   | Chile | **NULL** | **NULL**
-        Administración | 8          | 27-384-2   | Argentina | **NULL** | **NULL**
+        D_NOMBRE       | <D_NUMERO\> | D_MGR_CUIL | D_AREAS_INFLUENCIA1 | D_AREAS_INFLUENCIA2 | D_AREAS_INFLUENCIA3
+        -------------- | ----------- | ---------- | -- | -- | --
+        Investigación  | 2           | 27-233-9   | Argentina | Brasil | Uruguay
+        Prensa         | 3           | 20-172-4   | Chile | **NULL** | **NULL**
+        Administración | 8           | 27-384-2   | Argentina | **NULL** | **NULL**
 
     + Introduce valores NULL para los casos en que la tupla no posee todos los valores.
     + No existe una semántica en cuanto al orden y ubicación de los valores.
@@ -344,31 +351,36 @@ Un esquema R está en 2FN si todo atributo no primo _A_ de _R_ depende funcional
 - Verificar sólo DF cuyos lado izquierdo posean atributos que sean parte de la PK.
 - Si la PK es un solo atributo, cumple 2FN.
 
-- Ejemplo descomposición en 2FN:
-    + **EP1**
-        ```text
-        E_DNI, P_NUMERO, HORAS
-        -----  --------
-          v       v       ^
-          |       |       |
-          v-------v-------^
-        ```
-    + **EP2**
-        ```text
-        E_DNI, E_NOMBRE
-        ----- 
-          v       ^
-          |       |
-          v-------^
-        ```
-    + **EP3**
-        ```text
-        P_NUMERO, P_NOMBRE, P_UBICACION
-        --------                       
-        v          ^          ^
-        |          |          |
-        v----------------------
-        ```
+Ejemplo descomposición en 2FN:
++ **EP1**
+
+```text
+E_DNI, P_NUMERO, HORAS
+-----  --------
+  v       v       ^
+  |       |       |
+  v-------v-------^
+```
+
++ **EP2**
+
+```text
+E_DNI, E_NOMBRE
+----- 
+  v       ^
+  |       |
+  v-------^
+```
+
++ **EP3**
+
+```text
+P_NUMERO, P_NOMBRE, P_UBICACION
+--------                       
+v          ^          ^
+|          |          |
+v----------------------
+```
 
 ## 3FN
 Un esquema está en 3FN si está en 2FN, y además ningún atributo no primo de R depende transitivamente de la PK.
@@ -377,32 +389,36 @@ Un esquema está en 3FN si está en 2FN, y además ningún atributo no primo de 
     + _X_ es SK de _R_.
     + _A_ es atributo primo de _R_.
 
-- Ejemplo descomposición 3FN
-    + **EMPLEADO_DEPARTAMENTO** (es 2FN, pero no es 3FN)
-        ```text
-        E_NOMBRE | <E_CUIL> | E_FECHA_NACIMIENTO | NRO_DPTO | D_NOMBRE
-            ^          v              ^              ^ v         ^
-            |          |              |              | |         |
-            ^----------v--------------^--------------^ |         |
-                                                       |         |
-                                                       v---------^
-        ```
+Ejemplo descomposición 3FN
 
-    + **EMPLEADO**
-        ```text
-        E_NOMBRE | <E_CUIL> | E_FECHA_NACIMIENTO | NRO_DPTO
-            ^          v              ^               ^
-            |          |              |               |
-            ^----------v--------------^---------------^
-        ```
+- **EMPLEADO_DEPARTAMENTO** (es 2FN, pero no es 3FN)
 
-    + **DEPARTAMENTO**
-        ```text
-        <NRO_DPTO> | D_NOMBRE
-           v            ^
-           |            |
-           v------------^
-        ```
+```text
+E_NOMBRE | <E_CUIL> | E_FECHA_NACIMIENTO | NRO_DPTO | D_NOMBRE
+    ^          v              ^              ^ v         ^
+    |          |              |              | |         |
+    ^----------v--------------^--------------^ |         |
+                                               |         |
+                                               v---------^
+```
+
+- **EMPLEADO**
+
+```text
+E_NOMBRE | <E_CUIL> | E_FECHA_NACIMIENTO | NRO_DPTO
+    ^          v              ^               ^
+    |          |              |               |
+    ^----------v--------------^---------------^
+```
+
+- **DEPARTAMENTO**
+
+```text
+<NRO_DPTO> | D_NOMBRE
+   v            ^
+   |            |
+   v------------^
+```
 
 - El natural join _ED1⋈ED2_ de la descomposición recompone la relación original sin generar tuplas espúreas.
 

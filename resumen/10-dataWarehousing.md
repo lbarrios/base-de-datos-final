@@ -32,6 +32,12 @@ Término genérico que incluye aplicaciones, infraestructura, herramientas y pr�
 
 ### Herramientas de administración de datos
 
+==TODO:==
+
 ### Herramientas de extracción y consulta
 
+==TODO:==
+
 ### Herramientas de modelización (data mining)
+
+==TODO:==

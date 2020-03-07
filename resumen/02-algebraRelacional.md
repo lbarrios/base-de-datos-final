@@ -52,6 +52,7 @@ Selecciona un subconjunto de tuplas de una relación a través de una condición
 
 ## Project
 Selecciona un subconjunto de columnas de una relación
+
 - Notación: π<lista de atributos\>(R)
 - Genera una **partición vertical** de la relación.
 
