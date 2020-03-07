@@ -9,5 +9,10 @@ Rendida en Marzo del 2020
 
 ## Preguntas de final (Vanina)
 
-- [Recopilación](finales/todas_las_preguntas.md)
+- [Recopilación](https://github.com/lbarrios/base-de-datos-final/releases/latest/download/todas_las_preguntas.html)
 - [Por temas](finales/vanina)
+
+## Resumen para el final
+
+- [Todo el resumen junto en HTML](https://github.com/lbarrios/base-de-datos-final/releases/latest/download/999-todo_junto.html)
+- [Por temas](resumen)
